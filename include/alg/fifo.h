@@ -11,6 +11,7 @@ class Fifo : public IAlgorithm {
 public:
     Fifo(std::vector<Page>&);
     FrameResult execute(std::vector<unsigned int>);
+
 };
 
 #endif // FIFO_H

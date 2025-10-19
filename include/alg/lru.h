@@ -11,6 +11,7 @@ class Lru : public IAlgorithm {
 public:
     Lru(std::vector<Page>&);
     FrameResult execute(std::vector<unsigned int>);
+    
 };
 
 #endif // LRU_H

@@ -10,7 +10,7 @@
 
 class MemoryManagementUnit {
 private:
-    std::unordered_map<unsigned int, Process*> mProcessVector;
+    std::unordered_map<unsigned int, Process*> mProcessList;
     std::unordered_map<unsigned int, Pointer> mSimbolTable;
     std::vector<Page> mRam;
     
@@ -29,6 +29,7 @@ public:
     inline void usePointer(unsigned int ptrId);
     inline void deletePointer(unsigned int ptrId);
     inline void killPointer(unsigned int pid);
+    
 };
 
 #endif // MMU_H

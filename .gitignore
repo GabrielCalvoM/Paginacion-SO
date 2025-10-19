@@ -40,5 +40,11 @@
 # debug information files
 *.dwo
 
-# VScode
+# dir
 .vscode/
+bin/
+dist/
+
+# glade
+**/*.glade*
+!**/*.glade

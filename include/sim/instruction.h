@@ -1,6 +1,8 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
+#include <cstddef>
+
 enum InstructionE {
     newI,
     useI,

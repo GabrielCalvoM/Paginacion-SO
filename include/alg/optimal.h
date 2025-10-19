@@ -14,6 +14,7 @@ private:
 public:
     Optimal(std::vector<Page>&, std::vector<unsigned int>);
     FrameResult execute(std::vector<unsigned int>);
+
 };
 
 #endif // OPTIMAL_H

@@ -31,6 +31,7 @@ protected:
 public:
     IAlgorithm(std::vector<Page>&);
     virtual FrameResult execute(std::vector<unsigned int>);
+
 };
 
 #endif // ALGORITHM_H

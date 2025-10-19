@@ -11,6 +11,7 @@ class Random : public IAlgorithm {
 public:
     Random(std::vector<Page>&);
     FrameResult execute(std::vector<unsigned int>);
+
 };
 
 #endif // RANDOM_H

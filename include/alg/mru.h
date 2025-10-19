@@ -11,6 +11,7 @@ class Mru : public IAlgorithm {
 public:
     Mru(std::vector<Page>&);
     FrameResult execute(std::vector<unsigned int>);
+
 };
 
 #endif // MRU_H
