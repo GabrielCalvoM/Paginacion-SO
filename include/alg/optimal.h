@@ -12,8 +12,8 @@ private:
     unsigned int mActualAccess = 0;
 
 public:
-    Optimal(std::vector<Page>&, std::vector<unsigned int>);
-    FrameResult execute(std::vector<unsigned int>);
+    Optimal(std::vector<Page>&, const std::vector<unsigned int>&);
+    FrameResult execute(const std::vector<unsigned int>&) override;
 
 };
 

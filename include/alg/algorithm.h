@@ -26,11 +26,15 @@ enum class AlgTypeE {
 
 class IAlgorithm {
 protected:
-    std::vector<Page> &const mRam;
+    std::vector<Page> &mRam;
 
 public:
     IAlgorithm(std::vector<Page>&);
-    virtual FrameResult execute(std::vector<unsigned int>);
+    virtual ~IAlgorithm() = default;
+
+    // Execute the algorithm for the given access sequence.
+    // Returns the frame result for the current access.
+    virtual FrameResult execute(const std::vector<unsigned int>&) = 0;
 
 };
 
