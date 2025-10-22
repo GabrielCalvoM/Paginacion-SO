@@ -1,7 +1,7 @@
 # Paginación-SO
 
 ## Makefile
-Aún no funciona :v
+Creo que sirve, pero medio raro
 
 ## Directorios
 * include -> Encabezados para importar entre archivos
