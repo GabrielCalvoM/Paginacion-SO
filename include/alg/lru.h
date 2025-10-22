@@ -1,3 +1,8 @@
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+
 #ifndef LRU_H
 #define LRU_H
 
@@ -15,3 +20,8 @@ public:
 };
 
 #endif // LRU_H
+
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////

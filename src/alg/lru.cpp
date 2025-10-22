@@ -1,3 +1,8 @@
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+
 #include "alg/lru.h"
 
 #include <vector>
@@ -11,3 +16,8 @@ FrameResult Lru::execute(const std::vector<unsigned int> &accesses) {
 	res.pagePos = 0;
 	return res;
 }
+
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////
+/////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////

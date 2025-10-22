@@ -18,26 +18,26 @@ private:
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
 public:
-    static const unsigned int ramSize = 4e5;
+    static const unsigned int ramSize = 4e5; // 400 KB
 
     MemoryManagementUnit();
     ~MemoryManagementUnit();
 
     // --- Getters ---
 
-
     // --- Setters ---
 
-
-    // --- Methods OS ---
-    inline unsigned int newPtr(unsigned int pid, size_t size); 
+    // --- Methods Process ---
+    inline unsigned int newPtr(unsigned int pid, size_t size);  
     inline void usePointer(unsigned int ptrId);
     inline void deletePointer(unsigned int ptrId);
     inline void killPointer(unsigned int pid);
     
-    // Test helpers
-    void runOptimalTest();
-    
 };
 
 #endif // MMU_H
+
+/*
+    // Test helpers
+    void runOptimalTest();
+*/
