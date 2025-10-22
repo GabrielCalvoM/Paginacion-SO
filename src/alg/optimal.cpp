@@ -1,5 +1,5 @@
 #include "alg/optimal.h"
-
+#include <cstdio>
 #include <vector>
 
 // Constructor

@@ -1,4 +1,5 @@
 #include "sim/memory_management_unit.h"
+#include "alg/optimal.h"
 
 // Constructor
 MemoryManagementUnit::MemoryManagementUnit() {
