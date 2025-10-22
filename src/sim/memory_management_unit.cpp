@@ -15,3 +15,13 @@ MemoryManagementUnit::~MemoryManagementUnit() {
     }
     
 }
+
+// Test: create an Optimal algorithm and run a single execute to trigger debug output
+void MemoryManagementUnit::runOptimalTest() {
+    // small access sequence to test Optimal
+    std::vector<unsigned int> seq = {1, 2, 3, 4, 1, 2, 5};
+    // instantiate Optimal with a reference to mRam
+    Optimal opt(mRam, seq);
+    // call execute which prints debug output
+    opt.execute(seq);
+}

@@ -9,5 +9,8 @@ FrameResult Optimal::execute(const std::vector<unsigned int> &accesses) {
 	FrameResult res;
 	res.state = InFrameE::Miss;
 	res.pagePos = 0;
+
+    printf("OPT EXEC \n");
+
 	return res;
 }

@@ -35,6 +35,9 @@ public:
     inline void deletePointer(unsigned int ptrId);
     inline void killPointer(unsigned int pid);
     
+    // Test helpers
+    void runOptimalTest();
+    
 };
 
 #endif // MMU_H
