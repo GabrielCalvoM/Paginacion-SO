@@ -10,7 +10,7 @@
 class Random : public IAlgorithm {
 public:
     Random(std::vector<Page>&);
-    FrameResult execute(std::vector<unsigned int>);
+    FrameResult execute(const std::vector<unsigned int>&) override;
 
 };
 

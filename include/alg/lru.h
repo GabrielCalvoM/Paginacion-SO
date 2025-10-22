@@ -10,7 +10,7 @@
 class Lru : public IAlgorithm {
 public:
     Lru(std::vector<Page>&);
-    FrameResult execute(std::vector<unsigned int>);
+    FrameResult execute(const std::vector<unsigned int>&) override;
     
 };
 

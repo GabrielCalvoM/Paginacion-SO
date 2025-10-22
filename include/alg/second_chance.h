@@ -10,7 +10,7 @@
 class SecondChance : public IAlgorithm {
 public:
     SecondChance(std::vector<Page>&);
-    FrameResult execute(std::vector<unsigned int>);
+    FrameResult execute(const std::vector<unsigned int>&) override;
 
 };
 

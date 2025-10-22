@@ -10,7 +10,7 @@
 class Fifo : public IAlgorithm {
 public:
     Fifo(std::vector<Page>&);
-    FrameResult execute(std::vector<unsigned int>);
+    FrameResult execute(const std::vector<unsigned int>&) override;
 
 };
 
