@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     // Sequence
 
     unsigned int pid = 1;
-    size_t bytes = 20 * Page::pageSize; // request 20 pages worth
+    size_t bytes = 101 * Page::pageSize; // request 20 pages worth
     unsigned int ptrId = computer.mmu.newPtr(pid, bytes);
 
     printf("Allocated pointer id = %u for pid = %u\n", ptrId, pid);
