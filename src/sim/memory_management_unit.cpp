@@ -37,7 +37,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     unsigned int placedPages = 0;
     while (placedPages < pages && mRam.size() < mRam.capacity()) {
         Page p = newPages[placedPages];
-        p.setInRealMemory(true);
+        p.setInRealMem(true);
         p.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
         mRam.push_back(p);
         ++placedPages;
@@ -45,7 +45,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
     // Fill Extra in DISK
     if (placedPages < pages) {
-        unsigned int remaining = pages - placedPages
+        unsigned int remaining = pages - placedPages;
         std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
 
         for (unsigned int idx : evictIndex) {
@@ -72,7 +72,16 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     // This part may need fixes
     mSimbolTable[ptr.id] = ptr;
     auto proc = mProcessList.find(pid);
-    proc.assignPtr(ptr);
+    
+    if (procIt == mProcessList.end()) {
+        // create and insert a new process if missing
+        Process* p = new Process();
+        mProcessList[pid] = p;
+        p->assignPtr(ptr.id);
+    } else {
+        procIt->second->assignPtr(ptr.id);
+    }
+
     return ptr.id;
 }
 
