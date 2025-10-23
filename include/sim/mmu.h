@@ -25,6 +25,9 @@ public:
     MemoryManagementUnit();
     ~MemoryManagementUnit();
 
+    // --- Debug ---
+    void printState() const;
+
     // --- Getters ---
 
     // --- Setters ---
