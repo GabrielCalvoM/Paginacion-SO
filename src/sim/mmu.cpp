@@ -67,10 +67,10 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             mDisk.push_back(ev);
 
             // move extra to frame
-            Page ex = newPages[placedPages];
-            ex.setInRealMem(true);
-            ex.setPhysicalDir(idx);
-            mRam[idx] = ex;
+            Page &frame = mRam[idx];
+            const Page &src  = newPages[placedPages];
+            frame.setInRealMem(true);
+            frame.setPhysicalDir(idx);
 
             ++placedPages;
         }
@@ -78,7 +78,8 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     }
 
     // Store Pointer Data (Table + Owner)
-    mSimbolTable[ptr.id] = ptr;
+    mSimbolTable[ptr.id].emplace(ptr.id, ptr);
+    
     auto proc = mProcessList.find(pid);
     
     if (proc == mProcessList.end()) {
