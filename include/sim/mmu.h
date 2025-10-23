@@ -38,8 +38,3 @@ public:
 };
 
 #endif // MMU_H
-
-/*
-    // Test helpers
-    void runOptimalTest();
-*/

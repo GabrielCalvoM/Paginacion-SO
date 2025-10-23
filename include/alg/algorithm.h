@@ -15,7 +15,7 @@ struct FrameResult {
     unsigned int pagePos;
 };
 
-enum class AlgTypeE {
+enum class AlgType {
     OPT,
     FIFO,
     SC,
