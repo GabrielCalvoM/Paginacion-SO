@@ -30,10 +30,10 @@ public:
     void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={});
 
     // --- Methods Process ---
-    inline unsigned int newPtr(unsigned int pid, size_t size);  
-    inline void usePtr(unsigned int ptrId);
-    inline void delPtr(unsigned int ptrId);
-    inline void kill(unsigned int pid);
+    unsigned int newPtr(unsigned int pid, size_t size);  
+    void usePtr(unsigned int ptrId);
+    void delPtr(unsigned int ptrId);
+    void kill(unsigned int pid);
     
 };
 
