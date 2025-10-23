@@ -10,11 +10,11 @@
 // Constructor
 Lru::Lru(std::vector<Page> &ram) : IAlgorithm(ram) {}
 
-FrameResult Lru::execute(const std::vector<unsigned int> &accesses) {
+std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages) {
 	FrameResult res;
 	res.state = InFrameE::Miss;
 	res.pagePos = 0;
-	return res;
+	return NULL;
 }
 
 /////////////////// ESTO CREO QUE NO HAY QUE IMPLEMENTARLO ///////////////////

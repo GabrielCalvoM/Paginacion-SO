@@ -6,7 +6,8 @@
 Random::Random(std::vector<Page> &ram) : IAlgorithm(ram) {}
 
 // Execute: stub implementation to satisfy linker
-FrameResult Random::execute(const std::vector<unsigned int> &accesses) {
+std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages)
+{
 	FrameResult res;
 	res.state = InFrameE::Miss;
 	res.pagePos = 0;
