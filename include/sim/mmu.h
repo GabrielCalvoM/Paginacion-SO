@@ -27,6 +27,7 @@ public:
     // --- Getters ---
 
     // --- Setters ---
+    void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={});
 
     // --- Methods Process ---
     inline unsigned int newPtr(unsigned int pid, size_t size);  

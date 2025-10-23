@@ -1,4 +1,4 @@
-#include "sim/memory_management_unit.h"
+#include "sim/mmu.h"
 #include "alg/optimal.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,15 @@ MemoryManagementUnit::~MemoryManagementUnit() {
     }
 }
 
+// --- SETTERS ---
+void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence) 
+{
+    // Init mAlgorithm
+    if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 
+    // Fallback OPT
+    else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- PROC METHOD: NEW PTR ---
@@ -50,6 +58,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
         for (unsigned int idx : evictIndex) {
             if (placedPages >= pages) break; // FINISH
+            if (idx >= mRam.size()) continue; // GUARD
 
             // move evicted to disk
             Page ev = mRam[idx];
@@ -69,17 +78,15 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     }
 
     // Store Pointer Data (Table + Owner)
-    // This part may need fixes
     mSimbolTable[ptr.id] = ptr;
     auto proc = mProcessList.find(pid);
     
-    if (procIt == mProcessList.end()) {
-        // create and insert a new process if missing
+    if (proc == mProcessList.end()) {
         Process* p = new Process();
         mProcessList[pid] = p;
         p->assignPtr(ptr.id);
     } else {
-        procIt->second->assignPtr(ptr.id);
+        proc->second->assignPtr(ptr.id);
     }
 
     return ptr.id;

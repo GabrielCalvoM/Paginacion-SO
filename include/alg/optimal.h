@@ -13,7 +13,7 @@ private:
 
 public:
     Optimal(std::vector<Page>&, const std::vector<unsigned int>&);
-    FrameResult execute(const std::vector<unsigned int>&) override;
+    std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsigned int pages) override;
 
 };
 

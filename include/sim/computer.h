@@ -5,7 +5,7 @@
 #include <string>
 
 #include "sim/instruction.h"
-#include "sim/memory_management_unit.h"
+#include "sim/mmu.h"
 
 class Computer {
 private:
@@ -13,7 +13,7 @@ private:
     unsigned int mInstrIndex = 0;
 
 public:
-    const MemoryManagementUnit mmu;
+    MemoryManagementUnit mmu;
     const unsigned int cores = 1;
     const unsigned int instrPerSec = 1;
     const unsigned int diskAccessTime = 5; // 5s

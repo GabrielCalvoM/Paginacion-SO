@@ -3,7 +3,6 @@
 #include <vector>
 #include <iostream>
 
-#define MAX_FRAMES 4
 
 // Constructor
 Optimal::Optimal(std::vector<Page> &ram, const std::vector<unsigned int> &sequence) : IAlgorithm(ram), mAccessSequence(sequence) {}
@@ -16,75 +15,16 @@ static void v_print(const std::vector<unsigned int> &vec, int index) {
     }
 }
 
-// Execute the Optimal algorithm over the provided access sequence.
-// This implementation mimics the standalone version but updates mRam
-// at the end so Pages reflect the final frame contents.
-FrameResult Optimal::execute(const std::vector<unsigned int> &accesses) {
-    std::vector<unsigned int> frame; // logical page numbers currently loaded
-    int index = 0;
-    FrameResult lastRes{InFrameE::Miss, 0};
+// Execute OPT
+std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsigned int pages)
+{
+    std::vector<unsigned int> evicted;
+    if (bufRAM.empty() || pages == 0) return evicted;
 
-    for (size_t step = 0; step < accesses.size(); ++step) {
-        unsigned int page = accesses[step];
+    unsigned int count = std::min<unsigned int>(pages, static_cast<unsigned int>(bufRAM.size()));
+    for (unsigned int i = 0; i < count; ++i) evicted.push_back(i);
 
-        // Search if page is already in frame
-        int pagePos = 0;
-        bool isInPage = false;
-        for (pagePos = 0; pagePos < (int)frame.size(); ++pagePos) {
-            if (frame[pagePos] == page) { isInPage = true; break; }
-        }
-
-        if (isInPage) {
-            lastRes.state = InFrameE::Hit;
-            lastRes.pagePos = pagePos;
-        } else {
-            // Miss
-            if (frame.size() < MAX_FRAMES) {
-                frame.push_back(page);
-                lastRes.state = InFrameE::Miss;
-                lastRes.pagePos = (unsigned int)(frame.size() - 1);
-            } else {
-                // Find which frame entry will be used farthest in the future (or never)
-                std::vector<unsigned int> founded(frame.begin(), frame.end());
-
-                for (size_t i = step + 1; i < accesses.size(); ++i) {
-                    for (size_t j = 0; j < founded.size(); ++j) {
-                        if (founded[j] == accesses[i]) {
-                            founded.erase(founded.begin() + j);
-                            break;
-                        }
-                    }
-                    if (founded.size() == 1) break;
-                }
-
-                // The remaining founded[0] is the victim to replace
-                int victimPos = 0;
-                while (frame[victimPos] != founded[0]) ++victimPos;
-                frame[victimPos] = page;
-                lastRes.state = InFrameE::Miss;
-                lastRes.pagePos = victimPos;
-            }
-        }
-
-        // Debug print similar to original
-        std::cout << "index = " << step << " { ";
-        v_print(accesses, step);
-        std::cout << " }\n";
-        std::cout << "      frame =  { ";
-        v_print(frame, lastRes.pagePos);
-        std::cout << " }    " << (lastRes.state == InFrameE::Hit ? "Hit" : "Miss") << std::endl << std::endl;
-    }
-
-    // Optionally update mRam to reflect final frame contents (so other components can inspect)
-    mRam.clear();
-    for (unsigned int pg : frame) {
-        Page p;
-        p.setPhysicalDir(pg);
-        p.setInRealMem(true);
-        mRam.push_back(p);
-    }
-
-    return lastRes;
+    return evicted;
 }
 
 
