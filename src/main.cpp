@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     // Build Simulation
     Computer computer;
     std::vector<unsigned int> futureSequence; 
-    computer.mmu.initAlgorithm(AlgTypeE::OPT, futureSequence);
+    computer.mmu.initAlgorithm(AlgType::OPT, futureSequence);
 
     // Sequence
 
