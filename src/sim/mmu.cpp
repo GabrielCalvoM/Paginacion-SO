@@ -80,7 +80,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     }
 
     // Store Pointer Data (Table + Owner)
-    mSimbolTable[ptr.id].emplace(ptr.id, ptr);
+    mSimbolTable.emplace(ptr.id, ptr);
 
     auto proc = mProcessList.find(pid);
     

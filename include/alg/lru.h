@@ -15,8 +15,8 @@
 class Lru : public IAlgorithm {
 public:
     Lru(std::vector<Page>&);
-    FrameResult execute(const std::vector<unsigned int>&) override;
-    
+    std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages) override;
+        
 };
 
 #endif // LRU_H
