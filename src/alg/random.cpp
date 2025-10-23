@@ -11,5 +11,5 @@ std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int 
 	FrameResult res;
 	res.state = InFrameE::Miss;
 	res.pagePos = 0;
-	return res;
+	return NULL;
 }
