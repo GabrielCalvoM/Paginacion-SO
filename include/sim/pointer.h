@@ -8,6 +8,7 @@
 class Pointer {
 private:
     static unsigned int mIdCount;
+    unsigned int pidOwner;
     std::vector<Page> mPages;
 public:
     const unsigned int id;
@@ -19,6 +20,7 @@ public:
 
     // --- Setters ---
     void assignPages(int num);
+    // void setOwner(unsigned int num)
     
 };
 

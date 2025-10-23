@@ -18,34 +18,63 @@ MemoryManagementUnit::~MemoryManagementUnit() {
     }
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
-// --- AUX METHODS ---
+// --- PROC METHOD: NEW PTR ---
+unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size) 
+{
+    // Compute Pages
+    unsigned int pages = size / Page::pageSize;
+    if (size % Page::pageSize != 0) ++pages;
 
-void addPage(unsigned int pid) {
-    // Check if mRam <= 100 pages
-    if (mRam.size() < 100) {
-    // Replace Page if needed using the algorithm
-    } else {
-    // Page fault handling
+    // Create Pointer and assign Pages
+    Pointer ptr;
+    ptr.assignPages(static_cast<int>(pages));
+    std::vector<Page> newPages = ptr.getPages();
+
+    // Fill Pages in RAM
+    unsigned int placedPages = 0;
+    while (placedPages < pages && mRam.size() < mRam.capacity()) {
+        Page p = newPages[placedPages];
+        p.setInRealMemory(true);
+        p.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+        mRam.push_back(p);
+        ++placedPages;
     }
+
+    // Fill Extra in DISK
+    if (placedPages < pages) {
+        unsigned int remaining = pages - placedPages
+        std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
+
+        for (unsigned int idx : evictIndex) {
+            if (placedPages >= pages) break; // FINISH
+
+            // move evicted to disk
+            Page ev = mRam[idx];
+            ev.setInRealMem(false);
+            ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+            mDisk.push_back(ev);
+
+            // move extra to frame
+            Page ex = newPages[placedPages];
+            ex.setInRealMem(true);
+            ex.setPhysicalDir(idx);
+            mRam[idx] = ex;
+
+            ++placedPages;
+        }
+
+    }
+
+    // Store Pointer Data (Table + Owner)
+    // This part may need fixes
+    mSimbolTable[ptr.id] = ptr;
+    auto proc = mProcessList.find(pid);
+    proc.assignPtr(ptr);
+    return ptr.id;
 }
 
-
-// --- PROC METHODS ---
-
-unsigned int newPtr(unsigned int pid, size_t size) {
-
-    return pid;
-}
-
-
-/*
-    // Test: create an Optimal algorithm and run a single execute to trigger debug output
-    void MemoryManagementUnit::runOptimalTest() {
-    // small access sequence to test Optimal
-    std::vector<unsigned int> seq = {0, 1, 2, 1, 3, 5, 8, 20, 13, 1, 2, 4, 5, 15, 0, 15};
-    // instantiate Optimal with a reference to mRam
-    Optimal opt(mRam, seq);
-    // call execute which prints debug output
-    opt.execute(seq);
-*/
+//////////////////////////////////////////////////////////////////////////////////////////
+// --- PROC METHOD: USE PTR ---

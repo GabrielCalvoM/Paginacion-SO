@@ -7,7 +7,13 @@ unsigned int Pointer::mIdCount = 0;
 Pointer::Pointer() : id(++mIdCount) {}
 
 // --- Getters ---
-std::vector<Page> Pointer::getPages() const { return mPages; }
+std::vector<Page> Pointer::getPages() const { 
+    return mPages; 
+}
 
 // --- Setters ---
-void Pointer::assignPages(int num) { for (int i = 0; i < num; ++i) mPages.push_back(Page()); }
+void Pointer::assignPages(int num) { 
+    for (int i = 0; i < num; ++i) {
+        mPages.push_back(Page());
+    }
+}

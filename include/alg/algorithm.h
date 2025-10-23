@@ -32,9 +32,9 @@ public:
     IAlgorithm(std::vector<Page>&);
     virtual ~IAlgorithm() = default;
 
-    // Execute the algorithm for the given access sequence.
-    // Returns the frame result for the current access.
-    virtual FrameResult execute(const std::vector<unsigned int>&) = 0;
+    // Execute the algorithm to free 'pages' frames.
+    // Returns a list of indices in mRam that should be evicted (ordered by eviction preference).
+    virtual std::vector<unsigned int> execute(const std::vector<Page>& bufRAM, unsigned int pages) = 0;
 
 };
 

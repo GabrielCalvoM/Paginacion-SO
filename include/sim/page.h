@@ -10,7 +10,7 @@ private:
     bool mSecondChance = 0;
 
 public:
-    static const unsigned int pageSize = 4e3;
+    static const unsigned int pageSize = 4096; // 4 KB
     const unsigned int id;
 
     Page();

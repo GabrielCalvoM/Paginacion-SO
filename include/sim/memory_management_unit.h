@@ -15,10 +15,11 @@ private:
     std::unordered_map<unsigned int, Process*> mProcessList;
     std::unordered_map<unsigned int, Pointer> mSimbolTable;
     std::vector<Page> mRam;
+    std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
 public:
-    static const unsigned int ramSize = 4e5; // 400 KB
+    static const unsigned int ramSize = 409600; // 400 KB
 
     MemoryManagementUnit();
     ~MemoryManagementUnit();
@@ -29,9 +30,9 @@ public:
 
     // --- Methods Process ---
     inline unsigned int newPtr(unsigned int pid, size_t size);  
-    inline void usePointer(unsigned int ptrId);
-    inline void deletePointer(unsigned int ptrId);
-    inline void killPointer(unsigned int pid);
+    inline void usePtr(unsigned int ptrId);
+    inline void delPtr(unsigned int ptrId);
+    inline void kill(unsigned int pid);
     
 };
 

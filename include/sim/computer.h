@@ -18,6 +18,7 @@ public:
     const unsigned int instrPerSec = 1;
     const unsigned int diskAccessTime = 5; // 5s
     
+    
 };
 
 #endif // COMPUTER_H
