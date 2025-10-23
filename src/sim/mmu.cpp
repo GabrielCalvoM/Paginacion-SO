@@ -68,9 +68,11 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
             // move extra to frame
             Page &frame = mRam[idx];
-            const Page &src  = newPages[placedPages];
             frame.setInRealMem(true);
             frame.setPhysicalDir(idx);
+            
+            // Copy Mut Attributes
+            // const Page &src  = newPages[placedPages];
 
             ++placedPages;
         }
@@ -79,7 +81,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
     // Store Pointer Data (Table + Owner)
     mSimbolTable[ptr.id].emplace(ptr.id, ptr);
-    
+
     auto proc = mProcessList.find(pid);
     
     if (proc == mProcessList.end()) {
