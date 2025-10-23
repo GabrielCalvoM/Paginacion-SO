@@ -18,17 +18,17 @@ int main(int argc, char *argv[]) {
 
     unsigned int pid = 1;
     size_t bytes = 100 * Page::pageSize;
-    unsigned int ptrId = computer.mmu.newPtr(pid, bytes);
+    computer.mmu.newPtr(pid, bytes);
 
     pid = 2;
     bytes = 4 * Page::pageSize;
-    unsigned int ptrId = computer.mmu.newPtr(pid, bytes);
+    computer.mmu.newPtr(pid, bytes);
 
     pid = 3;
     bytes = 4 * Page::pageSize;
-    unsigned int ptrId = computer.mmu.newPtr(pid, bytes);
+    computer.mmu.newPtr(pid, bytes);
 
-    mmu.printState();
+    computer.mmu.printState();
 
     return 0;
 }

@@ -1,5 +1,6 @@
 #include "sim/mmu.h"
 #include "alg/optimal.h"
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- CPP IMPLEMENTATION ---
@@ -23,43 +24,43 @@ void MemoryManagementUnit::printState() const
 {
     std::cout << "===[ MMU STATE ]===" << std::endl;
     for (const auto &[pid, process] : mProcessList) {
-        std::cout << "PID : " << pid << std::endl;
+        std::cout << "\n PID : " << pid << std::endl;
 
         if (!process) {
-            std::cout << " NULL" << std::endl;
+            std::cout << " NULL \n" << std::endl;
             continue;
         }
 
         auto ptrs = process->getPointers();
         if (ptrs.empty()) {
-            std::cout << " NULL" << std::endl;
+            std::cout << " NULL \n" << std::endl;
             continue;
         }
 
         for (unsigned int ptrId : ptrs) {
-            std::cout << " Ptr(" << ptrId << ") --> ";
+            std::cout << " Ptr(" << ptrId << ") --> \n";
 
             auto it = mSimbolTable.find(ptrId);
             if (it == mSimbolTable.end()) {
-                std::cout << " NULL" << std::endl;
+                std::cout << " NULL \n" << std::endl;
                 continue;
             }
 
             const Pointer &ptr = it->second;
             auto pages = ptr.getPages();
             if (pages.empty()) {
-                std::cout << " NULL" << std::endl;
+                std::cout << " NULL \n" << std::endl;
                 continue;
             }
 
             for (const Page &page : pages) {
-                std::cout << "[ PageID: " << page.id 
+                std::cout << "\t [ PageID: " << page.id 
                           << " | InRAM: " << (page.isInRealMem() ? "Y" : "N") 
-                          << " | PhysDir: " << page.getPhysicalDir() << " ] ";
+                          << " | PhysDir: " << page.getPhysicalDir() << " ] \n ";
             }
         }
     }
-    std::cout << "===================" << std::endl;
+    std::cout << "\n =================== \n" << std::endl;
     std::cout << std::flush;
 }
 
