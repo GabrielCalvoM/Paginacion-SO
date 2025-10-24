@@ -85,15 +85,17 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     // Create Pointer and assign Pages
     Pointer ptr;
     ptr.assignPages(static_cast<int>(pages));
-    std::vector<Page> newPages = ptr.getPages();
+    std::vector<Page> &newPages = ptr.getPages();
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
     while (placedPages < pages && mRam.size() < mRam.capacity()) {
-        Page p = newPages[placedPages];
-        p.setInRealMem(true);
-        p.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-        mRam.push_back(p);
+        
+        Page &pg = newPages[placedPages];
+        pg.setInRealMem(true);
+        pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+        mRam.push_back(pg);
+
         ++placedPages;
     }
 

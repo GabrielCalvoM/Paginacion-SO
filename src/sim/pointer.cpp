@@ -7,7 +7,11 @@ unsigned int Pointer::mIdCount = 0;
 Pointer::Pointer() : id(++mIdCount) {}
 
 // --- Getters ---
-std::vector<Page> Pointer::getPages() const { 
+std::vector<Page>& Pointer::getPages() { 
+    return mPages; 
+}
+
+const std::vector<Page>& Pointer::getPages() const { 
     return mPages; 
 }
 

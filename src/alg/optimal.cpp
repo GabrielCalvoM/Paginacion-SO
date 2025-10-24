@@ -18,13 +18,18 @@ static void v_print(const std::vector<unsigned int> &vec, int index) {
 // Execute OPT
 std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsigned int pages)
 {
-    printf("[OPT]-Start \n");
+    printf("\n [OPT]-Start \n");
     std::vector<unsigned int> evicted;
     if (bufRAM.empty() || pages == 0) return evicted;
 
     unsigned int count = std::min<unsigned int>(pages, static_cast<unsigned int>(bufRAM.size()));
     for (unsigned int i = 0; i < count; ++i) evicted.push_back(i);
-    printf("[OPT]-Fin \n");
+    
+    printf(" [OPT]-Evicting Pages: ");
+    for (unsigned int idx : evicted) {  
+        std::cout << idx << " ";
+    }
+    std::cout << "\n";
     return evicted;
 }
 

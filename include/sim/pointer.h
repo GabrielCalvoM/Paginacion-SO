@@ -16,7 +16,11 @@ public:
     Pointer();
 
     // --- Getters ---
-    std::vector<Page> getPages() const;
+
+    // Pages, mut and read only
+    std::vector<Page>& getPages();
+    const std::vector<Page>& getPages() const;
+
 
     // --- Setters ---
     void assignPages(int num);
