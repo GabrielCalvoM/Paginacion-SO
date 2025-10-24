@@ -19,6 +19,16 @@ MemoryManagementUnit::~MemoryManagementUnit() {
     }
 }
 
+// --- SETTERS ---
+void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence) 
+{
+    // Init mAlgorithm
+    if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
+
+    // Fallback OPT
+    else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
+}
+
 // --- DEBUG ---
 void MemoryManagementUnit::printState() const
 {
@@ -55,8 +65,8 @@ void MemoryManagementUnit::printState() const
 
             for (const Page &page : pages) {
                 std::cout << "\t [ PageID: " << page.id 
-                          << " | InRAM: " << (page.isInRealMem() ? "Y" : "N") 
-                          << " | PhysDir: " << page.getPhysicalDir() << " ] \n ";
+                          << "\t | InRAM: " << (page.isInRealMem() ? "Y" : "N") 
+                          << "\t | PhysDir: " << page.getPhysicalDir() << " ] \n ";
             }
         }
     }
@@ -64,14 +74,48 @@ void MemoryManagementUnit::printState() const
     std::cout << std::flush;
 }
 
-// --- SETTERS ---
-void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence) 
+//////////////////////////////////////////////////////////////////////////////////////////
+// --- EXEC INSTRUCTION  ---
+void MemoryManagementUnit::executeIntSet(const IntSet &iset) 
 {
-    // Init mAlgorithm
-    if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
+for (unsigned int id : iset.getOrder()) {
+    const Instruction* i = iset.getInstruction(id);
+    if (!i) continue;
 
-    // Fallback OPT
-    else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
+    unsigned int p = i->param1;
+    size_t bytes = i->param2;
+
+    switch (i->type) {
+        // Call New
+        case newI: {
+            newPtr(p, bytes);
+            break;
+        }
+
+        // Call Use
+        case useI: {
+            usePtr(p);
+            break;
+        }
+
+        // Call Del
+        case delI: {
+            delPtr(p);
+            break;
+        }
+
+        // Call Kill
+        case killI: {
+            kill(p);
+            break;
+        }
+
+        // Fall Back
+        default: {
+            printf("[ERROR] = Instruction Not Valid ");
+        }
+    }
+}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
