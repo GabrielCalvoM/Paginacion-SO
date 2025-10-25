@@ -107,6 +107,6 @@ void GtkFileManager::on_resize(Gtk::Allocation& allocation) {
 }
 
 static inline void insert_instruction(Glib::RefPtr<Gtk::TextBuffer> text, char instruction[], char args[]) {
-    static Glib::ustring buffer = Glib::ustring::compose("%1(%2)\n", instruction, args);
+    Glib::ustring buffer = Glib::ustring::compose("%1(%2)\n", instruction, args);
     text->insert(text->end(), buffer);
 }
