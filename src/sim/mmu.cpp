@@ -1,5 +1,6 @@
 #include "sim/mmu.h"
 #include "alg/optimal.h"
+#include "alg/fifo.h"
 #include <iostream>
 #include <new>
 #include <algorithm>
@@ -27,7 +28,8 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
 {
     // Init mAlgorithm
     if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
-
+    // fifo
+    else if (type == AlgType::FIFO) mAlgorithm = std::make_unique<Fifo>(mRam);
     // Fallback OPT
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
 }

@@ -8,7 +8,8 @@ class Application {
 private:
     Computer mOptSimulation;
     Computer mAlgSimulation;
-
+    Computer mFifoSimulation;
+    
     GtkPaginacion mWindow;
 
 public:
