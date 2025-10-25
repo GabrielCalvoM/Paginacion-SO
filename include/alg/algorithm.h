@@ -5,24 +5,24 @@
 
 #include "sim/page.h"
 
-enum class InFrameE {
+typedef enum class InFrame {
     Hit,
     Miss
-};
+} InFrameE;
 
 struct FrameResult {
     InFrameE state;
     unsigned int pagePos;
 };
 
-enum class AlgType {
+typedef enum class AlgType {
     OPT,
     FIFO,
     SC,
     MRU,
     LRU,
     RND
-};
+} AlgTypeE;
 
 class IAlgorithm {
 protected:
