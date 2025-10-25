@@ -1,5 +1,13 @@
 # Paginación-SO
 
+## Instalar librerías
+### Gtkmm:
+
+```sh
+sudo apt update
+sudo apt install libgtkmm-3.0-dev
+```
+
 ## Makefile
 Creo que sirve, pero medio raro
 
