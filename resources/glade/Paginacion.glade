@@ -11,9 +11,103 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="InfoAlgModel">
+    <columns>
+      <!-- column-name Processes -->
+      <column type="guint"/>
+      <!-- column-name SimTime -->
+      <column type="guint"/>
+      <!-- column-name Ram -->
+      <column type="guint"/>
+      <!-- column-name VRam -->
+      <column type="guint"/>
+      <!-- column-name LoadedPages -->
+      <column type="guint"/>
+      <!-- column-name Thrashing -->
+      <column type="guint"/>
+      <!-- column-name Fragmentation -->
+      <column type="guint"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="InfoOptModel">
+    <columns>
+      <!-- column-name Processes -->
+      <column type="guint"/>
+      <!-- column-name SimTime -->
+      <column type="guint"/>
+      <!-- column-name Ram -->
+      <column type="guint"/>
+      <!-- column-name VRam -->
+      <column type="guint"/>
+      <!-- column-name LoadedPages -->
+      <column type="guint"/>
+      <!-- column-name Thrashing -->
+      <column type="guint"/>
+      <!-- column-name Fragmentation -->
+      <column type="guint"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">0</col>
+        <col id="1">0</col>
+        <col id="2">0</col>
+        <col id="3">0</col>
+        <col id="4">0</col>
+        <col id="5">0</col>
+        <col id="6">0</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkTextBuffer" id="InstructionsBuffer"/>
+  <object class="GtkListStore" id="MmuAlgModel">
+    <columns>
+      <!-- column-name PageID -->
+      <column type="guint"/>
+      <!-- column-name PID -->
+      <column type="guint"/>
+      <!-- column-name Loaded -->
+      <column type="gboolean"/>
+      <!-- column-name LAddr -->
+      <column type="guint"/>
+      <!-- column-name MAddr -->
+      <column type="guint"/>
+      <!-- column-name DAddr -->
+      <column type="guint"/>
+      <!-- column-name LoadedT -->
+      <column type="guint"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="MmuOptModel">
+    <columns>
+      <!-- column-name PageID -->
+      <column type="guint"/>
+      <!-- column-name PID -->
+      <column type="guint"/>
+      <!-- column-name Loaded -->
+      <column type="gboolean"/>
+      <!-- column-name LAddr -->
+      <column type="guint"/>
+      <!-- column-name MAddr -->
+      <column type="guint"/>
+      <!-- column-name DAddr -->
+      <column type="guint"/>
+      <!-- column-name LoadedT -->
+      <column type="guint"/>
+    </columns>
+  </object>
   <object class="GtkEntryBuffer" id="SeedBuffer">
     <property name="text" translatable="yes">0</property>
+  </object>
+  <object class="GtkListStore" id="VoidModel">
+    <columns>
+      <!-- column-name void -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes"> </col>
+      </row>
+    </data>
   </object>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">4294967295</property>
@@ -21,16 +115,22 @@
     <property name="page-increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment2">
-    <property name="upper">500</property>
+    <property name="lower">1</property>
+    <property name="upper">100</property>
+    <property name="value">1</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
   <object class="GtkAdjustment" id="adjustment3">
-    <property name="upper">100000</property>
+    <property name="lower">1</property>
+    <property name="upper">5000</property>
+    <property name="value">1</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-  <object class="GtkWindow" id="Main Window">
+  <object class="GtkWindow" id="MainWindow">
+    <property name="width-request">962</property>
+    <property name="height-request">509</property>
     <property name="can-focus">False</property>
     <child>
       <object class="GtkBox">
@@ -64,7 +164,7 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="GenerateButton">
                     <property name="label" translatable="yes">Generar instrucciones</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -77,7 +177,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkAspectFrame">
+                  <object class="GtkAspectFrame" id="DragAndDrop">
                     <property name="height-request">140</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -283,7 +383,6 @@
                         <property name="input-purpose">number</property>
                         <property name="adjustment">adjustment2</property>
                         <property name="numeric">True</property>
-                        <property name="value">2342345</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -327,7 +426,6 @@
                         <property name="input-purpose">number</property>
                         <property name="adjustment">adjustment3</property>
                         <property name="numeric">True</property>
-                        <property name="value">2342345</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -364,14 +462,500 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
+                <property name="spacing">16</property>
                 <child>
                   <placeholder/>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">16</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">RAM - OPT</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="RamOptView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">VoidModel</property>
+                                <property name="headers-visible">False</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="RamAlgLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">RAM - [ALG]</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="RamAlgView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">VoidModel</property>
+                                <property name="headers-visible">False</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="spacing">16</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkScrolledWindow">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hscrollbar-policy">never</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="MmuOptView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">MmuOptModel</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection">
+                                    <property name="mode">none</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">ID</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">0</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">PID</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">1</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Cargado</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">2</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">L-Addr</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">3</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">M-Addr</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">4</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">D-Addr</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">5</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Tiempo Cargado</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">6</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Marca</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkTreeView" id="ProcessTimeOptView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="model">InfoOptModel</property>
+                            <property name="enable-grid-lines">both</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection">
+                                <property name="mode">none</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">Procesos</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">Tiempo Simulado</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkTreeView" id="RamInfoOptView">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="model">InfoOptModel</property>
+                            <property name="enable-grid-lines">both</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection">
+                                <property name="mode">none</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">RAM KB</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">2</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">RAM %</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">2</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">V-RAM KB</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn">
+                                <property name="title" translatable="yes">V-RAM %</property>
+                                <child>
+                                  <object class="GtkCellRendererText"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <!-- n-columns=3 n-rows=2 -->
+                          <object class="GtkGrid">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="ypad">4</property>
+                                <property name="label" translatable="yes">Páginas</property>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Thrashing</property>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTreeView" id="LoadedPagesView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">InfoOptModel</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection">
+                                    <property name="mode">none</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Cargadas</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">4</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">No Cargadas</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">4</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTreeView" id="ThrashingView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">InfoOptModel</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection">
+                                    <property name="mode">none</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Segundos</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">5</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="min-width">60</property>
+                                    <property name="title" translatable="yes">%</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">5</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTreeView" id="FragmentationView">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="model">InfoOptModel</property>
+                                <property name="enable-grid-lines">both</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection">
+                                    <property name="mode">none</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkTreeViewColumn">
+                                    <property name="title" translatable="yes">Fragmentación</property>
+                                    <child>
+                                      <object class="GtkCellRendererText"/>
+                                      <attributes>
+                                        <attribute name="text">6</attribute>
+                                      </attributes>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="left-attach">2</property>
+                                <property name="top-attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">3</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
               <packing>

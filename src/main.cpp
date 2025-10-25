@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
     computer.mmu.delPtr(ptr3);
     computer.mmu.printState();
 
+    GtkPaginacion window;
+    window.run(argc, argv);
+
 
     return 0;
 }
