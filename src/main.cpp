@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     computer.mmu.initAlgorithm(AlgType::OPT, futureSequence);
 
     // usar FIFO para probar
-    computer..mmu.initAlgorithm(AlgType::FIFO);
+    computer.mmu.initAlgorithm(AlgType::FIFO);
     // Sequence
 
     unsigned int pid = 1;
