@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "sim/instruction.h"
+#include "sim/intset.h"
 #include "sim/mmu.h"
 
 class Computer {

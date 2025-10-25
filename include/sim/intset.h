@@ -2,6 +2,7 @@
 #define INSTRUCTION_H
 
 #include <cstddef>
+#include <unordered_map>
 
 enum IntType {
     newI,

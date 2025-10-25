@@ -12,7 +12,7 @@ namespace {
     } process_t;
 }
 
-static inline void insert_instruction(Glib::RefPtr<Gtk::TextBuffer> text, char instruction[], char args[]);
+static inline void insert_instruction(Glib::ustring &buffer, char instruction[], char args[]);
 
 // Constructor
 GtkFileManager::GtkFileManager() {}
@@ -36,10 +36,10 @@ void GtkFileManager::initialize(Glib::RefPtr<Gtk::Builder> builder) {
 
 void GtkFileManager::generate_instructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
     if (nOp == 0 || nProc == 0) return;
-    mInstructions->set_text("");
 
     std::vector<process_t> processes(nProc, (process_t){TRUE, {}});
     std::vector<bool> pointers;
+    Glib::ustring buffer;
 
     const char *instrList[] = {"new", "use", "delete", "kill"};
 
@@ -63,7 +63,7 @@ void GtkFileManager::generate_instructions(unsigned int seed, unsigned int nProc
         if (instrI == 1 || instrI == 2) {
             while (!pointers[ptrI = genPtr(genSeed, decltype(genPtr)::param_type(0, pointers.size() - 1))]);    // solo obtener punteros válidos
             sprintf(args, "%d", ptrI);
-            insert_instruction(mInstructions, instr, args);
+            insert_instruction(buffer, instr, args);
             if (instrI == 2) { pointers[ptrI] = FALSE; --pointersExists; }                                      // invalidar si es delete
             continue;
         }
@@ -73,7 +73,7 @@ void GtkFileManager::generate_instructions(unsigned int seed, unsigned int nProc
         // generar kill
         if (instrI == 3) {
             sprintf(args, "%d", processI + 1);
-            insert_instruction(mInstructions, instr, args);
+            insert_instruction(buffer, instr, args);
             std::vector ptrId = processes[processI].pointers;
             for (unsigned int i = 0; i < ptrId.size(); ++i) { pointers[ptrId[i]] = FALSE; --pointersExists; }   // matar todos los punteros del proceso
             processes[processI].exists = FALSE;                                                                 // matar el proceso
@@ -84,9 +84,11 @@ void GtkFileManager::generate_instructions(unsigned int seed, unsigned int nProc
         // generar new
         unsigned int size = genSpace(genSeed);
         sprintf(args, "%d, %d", processI + 1, size);
-        insert_instruction(mInstructions, instr, args);
+        insert_instruction(buffer, instr, args);
         pointers.push_back(TRUE); ++pointersExists;     // agregar puntero
     }
+
+    mInstructions->set_text(buffer);
 }
 
 void GtkFileManager::read_file() {
@@ -106,7 +108,6 @@ void GtkFileManager::on_resize(Gtk::Allocation& allocation) {
     mDragAndDropImg->set(pixbuf_scaled);
 }
 
-static inline void insert_instruction(Glib::RefPtr<Gtk::TextBuffer> text, char instruction[], char args[]) {
-    Glib::ustring buffer = Glib::ustring::compose("%1(%2)\n", instruction, args);
-    text->insert(text->end(), buffer);
+static inline void insert_instruction(Glib::ustring &buffer, char instruction[], char args[]) {
+    buffer += Glib::ustring::compose("%1(%2)\n", instruction, args);
 }
