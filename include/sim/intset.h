@@ -41,10 +41,8 @@ public:
 
 class IntSet {
 private:
-    unsigned int mNextId = 1;
-    unsigned int mNumInstructions = 0;
     std::vector<Instruction> mVec;
-    mutable decltype(mVec.begin()) mIt;
+    mutable decltype(mVec.cbegin()) mIt;
     mutable bool mItNull = true;
 
 public:
@@ -53,7 +51,11 @@ public:
 
     IntSet() = default;
 
-    unsigned int size() const { return mNumInstructions; }
+    void emptyVec() { mVec.clear(); }
+
+    void reset() const{ mIt = mVec.cbegin(); mItNull = false; }
+
+    unsigned int size() const { return mVec.size(); }
 
     std::string generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp);
 
@@ -61,8 +63,9 @@ public:
 
     void saveSet(const std::string filepath) const;
     
-    Instruction* next() const {
-        if (mIt == mVec.end()) { mItNull = true; return &*mIt;}
+    const Instruction* next() const {
+        if (mItNull) reset();
+        if (mIt == mVec.cend()) { return nullptr; }
         return &*(mIt++);
     }
 

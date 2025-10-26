@@ -22,6 +22,7 @@ std::string IntSet::generateInstructions(unsigned int seed, unsigned int nProc, 
     std::string buffer;
 
     if (nOp == 0 || nProc == 0) return buffer;
+    emptyVec();
 
     std::vector<process_t> processes(nProc, (process_t){true, {}});
     std::vector<bool> pointers;
@@ -71,17 +72,16 @@ std::string IntSet::generateInstructions(unsigned int seed, unsigned int nProc, 
         pointers.push_back(true); ++pointersExists;             // agregar puntero
     }
 
-    mIt = mVec.begin();
-    mItNull = false;
-
     return buffer;
 }
 
 std::string IntSet::loadSet(const std::string filepath) {
+    emptyVec();
+    
     std::ifstream file(filepath);
     std::string buffer, line, intStr, param;
     IntTypeE intType;
-    
+
     while (std::getline(file, line, ')')) {
         if (line.empty()) continue;
 
