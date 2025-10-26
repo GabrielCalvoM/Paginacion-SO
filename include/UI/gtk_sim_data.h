@@ -9,6 +9,8 @@
 
 class GtkSimData {
 private:
+    Glib::RefPtr<Gtk::Builder> mBuilder;
+
     Gtk::SpinButton *mRandomSeed;
     Gtk::ComboBox *mAlgorithm;
     Gtk::SpinButton *mNProcesses; 
@@ -24,7 +26,9 @@ public:
     unsigned int getNProcesses();
     unsigned int getNOperations();
 
-    void initialize(Glib::RefPtr<Gtk::Builder> builder);
+    void setBuilder(Glib::RefPtr<Gtk::Builder> builder) { mBuilder = builder; }
+
+    void initialize();
 
 };
 

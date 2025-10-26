@@ -41,11 +41,11 @@ unsigned int GtkSimData::getNOperations() {
 }
 
 
-void GtkSimData::initialize(Glib::RefPtr<Gtk::Builder> builder) {
-    builder->get_widget("SeedEntry", mRandomSeed);
-    builder->get_widget("AlgorithmCombo", mAlgorithm);
-    builder->get_widget("ProcessesEntry", mNProcesses);
-    builder->get_widget("OperationsEntry", mNOperations);
+void GtkSimData::initialize() {
+    mBuilder->get_widget("SeedEntry", mRandomSeed);
+    mBuilder->get_widget("AlgorithmCombo", mAlgorithm);
+    mBuilder->get_widget("ProcessesEntry", mNProcesses);
+    mBuilder->get_widget("OperationsEntry", mNOperations);
 
     Glib::RefPtr<Gtk::TreeModel> model = mAlgorithm->get_model();
     Gtk::ListStore *list = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(model).get();

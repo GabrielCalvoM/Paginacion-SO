@@ -10,8 +10,12 @@ void GtkPaginacion::initialize() {
     mBuilder = Gtk::Builder::create();
     mBuilder->add_from_file(std::string(PROJECT_ROOT) + "/resources/glade/Paginacion.glade");
     mBuilder->get_widget("MainWindow", mWindow);
-    mData.initialize(mBuilder);
-    mFManager.initialize(mBuilder);
+
+    mData.setBuilder(mBuilder);
+    mFManager.setBuilder(mBuilder);
+
+    mData.initialize();
+    mFManager.initialize();
 
     Gtk::Button *genButton;
     mBuilder->get_widget("GenerateButton", genButton);

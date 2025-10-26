@@ -27,6 +27,10 @@ public:
     GtkPaginacion(int argc, char *argv[], IntSet &set);
     ~GtkPaginacion();
 
+    const GtkFileManager& fileManager() { return mFManager; }
+    const GtkSimData& simulationData() { return mData; }
+    const GtkSimView& simulationView() { return mView; }
+
     void initialize();
     void run();
 

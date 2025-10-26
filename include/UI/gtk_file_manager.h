@@ -18,6 +18,8 @@
 
 class GtkFileManager {
 private:
+    Glib::RefPtr<Gtk::Builder> mBuilder;
+
     Gtk::Widget *mDragAndDrop;
     Gtk::Image *mDragAndDropImg;
     Gtk::Label *mFilename;
@@ -28,17 +30,21 @@ private:
     Gtk::FileChooserDialog *mSaveChooser;
 
     IntSet &mSet;
+    mutable std::vector<std::function<void()>> mSetConnection;
 
 public:
     GtkFileManager(IntSet &set);
     ~GtkFileManager();
 
-    void initialize(Glib::RefPtr<Gtk::Builder> builder);
+    void setBuilder(Glib::RefPtr<Gtk::Builder> builder) { mBuilder = builder; }
+    
+    void intSetConnect(std::function<void()> fun) const { mSetConnection.push_back(fun); }
+
+    void initialize();
+    void executeSetConnection() const;
     void generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp);
     void readFile(const std::string filename);
     void writeFile();
-
-    void onResize(Gtk::Allocation& allocation);
 
 };
 

@@ -22,18 +22,18 @@ GtkFileManager::GtkFileManager(IntSet &set) : mSet(set) {}
 GtkFileManager::~GtkFileManager() {}
 
 
-void GtkFileManager::initialize(Glib::RefPtr<Gtk::Builder> builder) {
+void GtkFileManager::initialize() {
     Gtk::TextView *instructions;
 
-    builder->get_widget("DragAndDrop", mDragAndDrop);
-    builder->get_widget("DragAndDropImg", mDragAndDropImg);
-    builder->get_widget("Filename", mFilename);
-    builder->get_widget("InstructionsView", instructions);
+    mBuilder->get_widget("DragAndDrop", mDragAndDrop);
+    mBuilder->get_widget("DragAndDropImg", mDragAndDropImg);
+    mBuilder->get_widget("Filename", mFilename);
+    mBuilder->get_widget("InstructionsView", instructions);
     mInstructions = instructions->get_buffer();
 
-    builder->get_widget("AskSave", mDialog);
-    builder->get_widget("OpenFile", mOpenChooser);
-    builder->get_widget("SaveFile", mSaveChooser);
+    mBuilder->get_widget("AskSave", mDialog);
+    mBuilder->get_widget("OpenFile", mOpenChooser);
+    mBuilder->get_widget("SaveFile", mSaveChooser);
 
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_file(std::string(PROJECT_ROOT) + "/resources/images/Drag_and_drop2.png");
     mDragAndDropImg->set(pixbuf);
@@ -65,6 +65,12 @@ void GtkFileManager::initialize(Glib::RefPtr<Gtk::Builder> builder) {
     });
 }
 
+void GtkFileManager::executeSetConnection() const {
+    for (auto func : mSetConnection) {
+        func();
+    }
+}
+
 void GtkFileManager::generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
     std::string buffer = mSet.generateInstructions(seed, nProc, nOp);
 
@@ -83,7 +89,7 @@ void GtkFileManager::generateInstructions(unsigned int seed, unsigned int nProc,
 
     mDialog->hide();
 
-
+    executeSetConnection();
     mInstructions->set_text(buffer);
 }
 
@@ -93,6 +99,7 @@ void GtkFileManager::readFile(const std::string filepath) {
     const int index = filepath.find_last_of('/') + 1;
     const std::string filename(filepath, index, filepath.size() - index);
     mFilename->set_text(filename);
+    executeSetConnection();
     mInstructions->set_text(buffer);
 }
 
@@ -103,13 +110,4 @@ void GtkFileManager::writeFile() {
     const int index = filepath.find_last_of('/') + 1;
     const std::string filename(filepath, index, filepath.size() - index);
     mFilename->set_text(filename);
-}
-
-void GtkFileManager::onResize(Gtk::Allocation& allocation) {
-    Glib::RefPtr<Gdk::Pixbuf> pixbuf = mDragAndDropImg->get_pixbuf();
-    int ancho = allocation.get_width();
-    int alto = allocation.get_height();
-
-    auto pixbuf_scaled = pixbuf->scale_simple(ancho, alto, Gdk::INTERP_BILINEAR);
-    mDragAndDropImg->set(pixbuf_scaled);
 }
