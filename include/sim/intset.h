@@ -1,14 +1,29 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
-#include <cstddef>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-enum IntType {
+typedef enum IntType {
     newI,
     useI,
     delI,
     killI
+} IntTypeE;
+
+const std::unordered_map<IntTypeE, std::string> intTypeString = {
+    {newI, "new"},
+    {useI, "use"},
+    {delI, "delete"},
+    {killI, "kill"}
+};
+
+const std::unordered_map<std::string, IntTypeE> stringToIntType = {
+    {"new", newI},
+    {"use", useI},
+    {"delete", delI},
+    {"kill", killI}
 };
 
 class Instruction {
@@ -25,31 +40,33 @@ public:
 };
 
 class IntSet {
+private:
+    unsigned int mNextId = 1;
+    unsigned int mNumInstructions = 0;
+    std::vector<Instruction> mVec;
+    mutable decltype(mVec.begin()) mIt;
+    mutable bool mItNull = true;
+
 public:
     static unsigned int maxInstructions;
-    std::unordered_map<unsigned int, Instruction> set;
-    std::vector<unsigned int> order;
-    unsigned int nextId = 1;
-    unsigned int numInstructions = 0;
 
 
     IntSet() = default;
 
-    unsigned int size() const { return numInstructions; }
+    unsigned int size() const { return mNumInstructions; }
 
-    bool loadSet(const std::string &filepath);
+    std::string generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp);
 
-    void saveSet() const;
+    std::string loadSet(const std::string filepath);
 
-    const std::vector<unsigned int>& getOrder() const 
-        { return order; }
+    void saveSet(const std::string filepath) const;
     
-    const Instruction* getInstruction(unsigned int id) const {
-        auto it = set.find(id);
-        return it == set.end() ? nullptr : &it->second;
+    Instruction* next() const {
+        if (mIt == mVec.end()) { mItNull = true; return &*mIt;}
+        return &*(mIt++);
     }
 
-    bool pushInstruction(const Instruction &ins);
+    bool pushInstruction(const Instruction ins);
 };
 
 #endif // INSTRUCTION_H

@@ -1,7 +1,10 @@
 #include <cmath>
+#include <glibmm.h>
 #include <gtkmm/button.h>
+#include <gtkmm/eventbox.h>
 #include <gtkmm/textview.h>
 #include <random>
+#include <iostream>
 
 #include "UI/gtk_file_manager.h"
 
@@ -12,10 +15,8 @@ namespace {
     } process_t;
 }
 
-static inline void insert_instruction(Glib::ustring &buffer, char instruction[], char args[]);
-
 // Constructor
-GtkFileManager::GtkFileManager() {}
+GtkFileManager::GtkFileManager(IntSet &set) : mSet(set) {}
 
 // Destructor
 GtkFileManager::~GtkFileManager() {}
@@ -30,84 +31,85 @@ void GtkFileManager::initialize(Glib::RefPtr<Gtk::Builder> builder) {
     builder->get_widget("InstructionsView", instructions);
     mInstructions = instructions->get_buffer();
 
+    builder->get_widget("AskSave", mDialog);
+    builder->get_widget("OpenFile", mOpenChooser);
+    builder->get_widget("SaveFile", mSaveChooser);
+
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_file(std::string(PROJECT_ROOT) + "/resources/images/Drag_and_drop2.png");
     mDragAndDropImg->set(pixbuf);
+    mDragAndDrop->add_events(Gdk::BUTTON_PRESS_MASK);
+    mDragAndDrop->drag_dest_set({Gtk::TargetEntry("text/uri-list")}, Gtk::DEST_DEFAULT_ALL, Gdk::ACTION_COPY);
+
+    mDragAndDrop->signal_drag_begin().connect([this](const Glib::RefPtr<Gdk::DragContext>& context) {
+        
+    });
+
+    mDragAndDrop->signal_drag_data_received().connect([this](const Glib::RefPtr<Gdk::DragContext>& context, int x, int y,
+                                                             const Gtk::SelectionData& data, guint info, guint time) {
+        std::string uri = data.get_uris()[0];
+        std::string filepath = Glib::filename_from_uri(uri);
+        std::cout << "filepath: " << filepath << std::endl;
+        this->readFile(filepath);
+    });
+
+    mDragAndDrop->signal_button_press_event().connect([this](GdkEventButton* event) {
+        if (event->type != GDK_BUTTON_PRESS) return true;
+
+        if (this->mOpenChooser->run() == Gtk::RESPONSE_OK) {
+            std::string filename = this->mOpenChooser->get_filename();
+            this->readFile(filename);
+        }
+
+        this->mOpenChooser->hide();
+        return true;
+    });
 }
 
-void GtkFileManager::generate_instructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
-    if (nOp == 0 || nProc == 0) return;
+void GtkFileManager::generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
+    std::string buffer = mSet.generateInstructions(seed, nProc, nOp);
 
-    std::vector<process_t> processes(nProc, (process_t){TRUE, {}});
-    std::vector<bool> pointers;
-    Glib::ustring buffer;
+    mSaveChooser->set_filename(std::string(PROJECT_ROOT) + "/files");
+    mSaveChooser->set_current_name("untitled");
 
-    const char *instrList[] = {"new", "use", "delete", "kill"};
-
-    std::mt19937 genSeed(seed);
-    std::uniform_int_distribution<> genSpace(1, 2e4);
-    std::uniform_int_distribution<> genPtr;
-    std::uniform_int_distribution<> genProc(0, nProc - 1);
-    std::discrete_distribution<> genInstr({0.3, 0.5, 0.15, 0.05});
-
-    char instr[7], args[40];
-    unsigned int instrI, ptrI, processI, pointersExists = 0, processesExists = nProc;
-
-    for (unsigned int i = 0; i < nOp; ++i) {
-        while ((instrI = i <= nProc / 10 || pointersExists == 0 ? 0                         // crear punteros si no hay o si no han pasado más de nProc/10 instrucciones
-            : genInstr(genSeed)) == 3
-            && i / (nProc - processesExists + 1) < std::ceil((double)nOp / (double)nProc)); // no hacer kill antes de nOp/nProc instrucciones
-
-        strcpy(instr, instrList[instrI]);
+    if (mDialog->run() == Gtk::RESPONSE_ACCEPT) {
+        mDialog->hide();
         
-        // generar use o delete
-        if (instrI == 1 || instrI == 2) {
-            while (!pointers[ptrI = genPtr(genSeed, decltype(genPtr)::param_type(0, pointers.size() - 1))]);    // solo obtener punteros válidos
-            sprintf(args, "%d", ptrI);
-            insert_instruction(buffer, instr, args);
-            if (instrI == 2) { pointers[ptrI] = FALSE; --pointersExists; }                                      // invalidar si es delete
-            continue;
+        if (mSaveChooser->run() == Gtk::RESPONSE_OK) {
+            writeFile();
         }
 
-        while (!processes[processI = genProc(genSeed)].exists); // solo obtener procesos corriendo
-        
-        // generar kill
-        if (instrI == 3) {
-            sprintf(args, "%d", processI + 1);
-            insert_instruction(buffer, instr, args);
-            std::vector ptrId = processes[processI].pointers;
-            for (unsigned int i = 0; i < ptrId.size(); ++i) { pointers[ptrId[i]] = FALSE; --pointersExists; }   // matar todos los punteros del proceso
-            processes[processI].exists = FALSE;                                                                 // matar el proceso
-            --processesExists;
-            continue;
-        }
-
-        // generar new
-        unsigned int size = genSpace(genSeed);
-        sprintf(args, "%d, %d", processI + 1, size);
-        insert_instruction(buffer, instr, args);
-        pointers.push_back(TRUE); ++pointersExists;     // agregar puntero
+        mSaveChooser->hide();
     }
+
+    mDialog->hide();
+
 
     mInstructions->set_text(buffer);
 }
 
-void GtkFileManager::read_file() {
+void GtkFileManager::readFile(const std::string filepath) {
+    std::string buffer = mSet.loadSet(filepath);
 
+    const int index = filepath.find_last_of('/') + 1;
+    const std::string filename(filepath, index, filepath.size() - index);
+    mFilename->set_text(filename);
+    mInstructions->set_text(buffer);
 }
 
-void GtkFileManager::write_file() {
+void GtkFileManager::writeFile() {
+    const std::string filepath = mSaveChooser->get_filename();
+    mSet.saveSet(filepath);
 
+    const int index = filepath.find_last_of('/') + 1;
+    const std::string filename(filepath, index, filepath.size() - index);
+    mFilename->set_text(filename);
 }
 
-void GtkFileManager::on_resize(Gtk::Allocation& allocation) {
+void GtkFileManager::onResize(Gtk::Allocation& allocation) {
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = mDragAndDropImg->get_pixbuf();
     int ancho = allocation.get_width();
     int alto = allocation.get_height();
 
     auto pixbuf_scaled = pixbuf->scale_simple(ancho, alto, Gdk::INTERP_BILINEAR);
     mDragAndDropImg->set(pixbuf_scaled);
-}
-
-static inline void insert_instruction(Glib::ustring &buffer, char instruction[], char args[]) {
-    buffer += Glib::ustring::compose("%1(%2)\n", instruction, args);
 }

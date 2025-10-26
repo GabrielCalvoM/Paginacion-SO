@@ -19,10 +19,10 @@ public:
     ~GtkSimData();
 
     // --- Getters ---
-    unsigned int get_seed();
-    AlgTypeE get_algorithm();
-    unsigned int get_n_processes();
-    unsigned int get_n_operations();
+    unsigned int getSeed();
+    AlgTypeE getAlgorithm();
+    unsigned int getNProcesses();
+    unsigned int getNOperations();
 
     void initialize(Glib::RefPtr<Gtk::Builder> builder);
 

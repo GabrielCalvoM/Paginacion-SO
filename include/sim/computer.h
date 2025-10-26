@@ -9,7 +9,7 @@
 
 class Computer {
 private:
-    static const std::vector<Instruction> instr;
+    static const std::vector<Instruction> mInstr;
     unsigned int mInstrIndex = 0;
 
 public:

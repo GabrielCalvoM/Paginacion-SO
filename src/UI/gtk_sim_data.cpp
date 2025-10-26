@@ -12,7 +12,7 @@ namespace {
     };
 }
 
-static inline void insert_algorithm(Gtk::ListStore*, AlgTypeE, const std::string);
+static inline void insertAlgorithm(Gtk::ListStore*, AlgTypeE, const std::string);
 
 // Constructor
 GtkSimData::GtkSimData() {}
@@ -22,21 +22,21 @@ GtkSimData::~GtkSimData() {}
 
 
 // --- Getters ---
-unsigned int GtkSimData::get_seed() {
+unsigned int GtkSimData::getSeed() {
     return (unsigned int) mRandomSeed->get_value_as_int();
 }
 
-AlgTypeE GtkSimData::get_algorithm(){
+AlgTypeE GtkSimData::getAlgorithm(){
     Gtk::TreeModel::Row row = *mAlgorithm->get_active();
     ModelColumns columns;
     return static_cast<AlgTypeE>(row.get_value(columns.value));
 }
 
-unsigned int GtkSimData::get_n_processes() {
+unsigned int GtkSimData::getNProcesses() {
     return (unsigned int) mNProcesses->get_value_as_int();
 }
 
-unsigned int GtkSimData::get_n_operations() {
+unsigned int GtkSimData::getNOperations() {
     return (unsigned int) mNOperations->get_value_as_int();
 }
 
@@ -50,14 +50,14 @@ void GtkSimData::initialize(Glib::RefPtr<Gtk::Builder> builder) {
     Glib::RefPtr<Gtk::TreeModel> model = mAlgorithm->get_model();
     Gtk::ListStore *list = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(model).get();
 
-    insert_algorithm(list, AlgTypeE::FIFO, "FIFO");
-    insert_algorithm(list, AlgTypeE::LRU, "LRU");
-    insert_algorithm(list, AlgTypeE::MRU, "MRU");
-    insert_algorithm(list, AlgTypeE::RND, "Random");
-    insert_algorithm(list, AlgTypeE::SC, "Second Chance");
+    insertAlgorithm(list, AlgTypeE::FIFO, "FIFO");
+    insertAlgorithm(list, AlgTypeE::LRU, "LRU");
+    insertAlgorithm(list, AlgTypeE::MRU, "MRU");
+    insertAlgorithm(list, AlgTypeE::RND, "Random");
+    insertAlgorithm(list, AlgTypeE::SC, "Second Chance");
 }
 
-static inline void insert_algorithm(Gtk::ListStore *list, AlgTypeE value, const std::string name) {
+static inline void insertAlgorithm(Gtk::ListStore *list, AlgTypeE value, const std::string name) {
     ModelColumns columns;
     Gtk::TreeModel::Row row = *list->append();
     row[columns.value] = (unsigned int) value;

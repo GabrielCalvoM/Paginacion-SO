@@ -6,6 +6,7 @@
 #endif // PROJECT_ROOT
 
 
+#include <gtkmm.h>
 #include <gtkmm/window.h>
 
 #include "UI/gtk_file_manager.h"
@@ -16,16 +17,18 @@ class GtkPaginacion {
 private:
     Glib::RefPtr<Gtk::Builder> mBuilder;
 
+    Gtk::Main kit;
     Gtk::Window *mWindow;
     GtkFileManager mFManager;
     GtkSimData mData;
     GtkSimView mView;
 
 public:
-    GtkPaginacion();
+    GtkPaginacion(int argc, char *argv[], IntSet &set);
     ~GtkPaginacion();
 
-    void run(int argc, char *argv[]);
+    void initialize();
+    void run();
 
 };
 

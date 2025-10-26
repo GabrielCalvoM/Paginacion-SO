@@ -7,10 +7,14 @@
 
 
 #include <gtkmm/builder.h>
+#include <gtkmm/dialog.h>
+#include <gtkmm/filechooserdialog.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/textbuffer.h>
 #include <string>
+
+#include "sim/intset.h"
 
 class GtkFileManager {
 private:
@@ -19,16 +23,22 @@ private:
     Gtk::Label *mFilename;
     Glib::RefPtr<Gtk::TextBuffer> mInstructions;
 
+    Gtk::Dialog *mDialog;
+    Gtk::FileChooserDialog *mOpenChooser;
+    Gtk::FileChooserDialog *mSaveChooser;
+
+    IntSet &mSet;
+
 public:
-    GtkFileManager();
+    GtkFileManager(IntSet &set);
     ~GtkFileManager();
 
     void initialize(Glib::RefPtr<Gtk::Builder> builder);
-    void generate_instructions(unsigned int seed, unsigned int nProc, unsigned int nOp);
-    void read_file();
-    void write_file();
+    void generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp);
+    void readFile(const std::string filename);
+    void writeFile();
 
-    void on_resize(Gtk::Allocation& allocation);
+    void onResize(Gtk::Allocation& allocation);
 
 };
 

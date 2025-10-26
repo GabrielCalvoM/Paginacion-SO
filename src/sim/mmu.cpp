@@ -1,10 +1,12 @@
 #include "sim/mmu.h"
-#include "alg/optimal.h"
-#include "alg/fifo.h"
+
+#include <algorithm>
 #include <iostream>
 #include <new>
-#include <algorithm>
 #include <set>
+
+#include "alg/optimal.h"
+#include "alg/fifo.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- CPP IMPLEMENTATION ---
@@ -83,44 +85,44 @@ void MemoryManagementUnit::printState() const
 // --- EXEC INSTRUCTION  ---
 void MemoryManagementUnit::executeIntSet(const IntSet &iset) 
 {
-for (unsigned int id : iset.getOrder()) {
-    const Instruction* i = iset.getInstruction(id);
-    if (!i) continue;
+    Instruction* i;
+    while ((i = iset.next())) {
+        if (!i) continue;
 
-    unsigned int p = i->param1;
-    size_t bytes = i->param2;
+        unsigned int p = i->param1;
+        size_t bytes = i->param2;
 
-    switch (i->type) {
-        // Call New
-        case newI: {
-            newPtr(p, bytes);
-            break;
-        }
+        switch (i->type) {
+            // Call New
+            case newI: {
+                newPtr(p, bytes);
+                break;
+            }
 
-        // Call Use
-        case useI: {
-            usePtr(p);
-            break;
-        }
+            // Call Use
+            case useI: {
+                usePtr(p);
+                break;
+            }
 
-        // Call Del
-        case delI: {
-            delPtr(p);
-            break;
-        }
+            // Call Del
+            case delI: {
+                delPtr(p);
+                break;
+            }
 
-        // Call Kill
-        case killI: {
-            kill(p);
-            break;
-        }
+            // Call Kill
+            case killI: {
+                kill(p);
+                break;
+            }
 
-        // Fall Back
-        default: {
-            printf("[ERROR] = Instruction Not Valid ");
+            // Fall Back
+            default: {
+                printf("[ERROR] = Instruction Not Valid ");
+            }
         }
     }
-}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

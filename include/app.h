@@ -12,9 +12,13 @@ private:
     
     GtkPaginacion mWindow;
 
+    IntSet mInstructions;
+
 public:
-    Application();
+    Application(int argc, char *argv[]);
     ~Application();
+
+    void run();
 
 };
 
