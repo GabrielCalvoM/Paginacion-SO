@@ -205,6 +205,9 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     for (unsigned int i = 0; i < pages.size(); ++i) {
         Page &pg = pages[i];
 
+        // ver el futuro si OPT
+        if (mAlgorithm) mAlgorithm->notifyAccess(pg.id);
+
         //si ya esta en RAM no hacer nada (lo del pass de Carlos)
         if (pg.isInRealMem()) continue;
 
