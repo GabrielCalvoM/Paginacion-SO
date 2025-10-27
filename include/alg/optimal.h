@@ -20,6 +20,6 @@ class Optimal : public IAlgorithm {
         std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages);
         
         void optForesee(unsigned int pageId) override;
-}
+};
 
 #endif // OPTIMAL_H
