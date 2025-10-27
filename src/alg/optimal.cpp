@@ -10,6 +10,7 @@
 Optimal::Optimal(std::vector<Page>& bufRAM, const std::vector<unsigned int>& accessSequence)
     : IAlgorithm(bufRAM), mAccessSequence(accessSequence), mCurIndex(0)
 {
+    // Ocurrence Map Build
     for (size_t idx = 0; idx < mAccessSequence.size(); ++idx) {
         unsigned int pid = mAccessSequence[idx];
         mOccurrences[pid].push_back(idx);
@@ -19,23 +20,12 @@ Optimal::Optimal(std::vector<Page>& bufRAM, const std::vector<unsigned int>& acc
 // Foresee Future (advance internal pointer / consume occurrence)
 void Optimal::optForesee(unsigned int pageId)
 {
-    if (mCurIndex >= mAccessSequence.size()) return;
-
-    // consume occurrences while current index matches pageId
-    while (mCurIndex < mAccessSequence.size() && mAccessSequence[mCurIndex] == pageId) {
-        auto &dq = mOccurrences[pageId];
-        if (!dq.empty() && dq.front() == mCurIndex) dq.pop_front();
+    if (mCurIndex < mAccessSequence.size() && mAccessSequence[mCurIndex] == pageId) {
         ++mCurIndex;
-    }
-
-    // clean up any stale entries < mCurIndex
-    for (auto &kv : mOccurrences) {
-        auto &dq = kv.second;
-        while (!dq.empty() && dq.front() < mCurIndex) dq.pop_front();
     }
 }
 
-// Execution: choose 'pages' frames to evict using Belady (farthest next use or never)
+// Execution: evict using Belady (farthest next use or never)
 std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsigned int pages) 
 {
     printf("\n [OPT]-Start \n");
@@ -43,30 +33,43 @@ std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsi
     std::vector<unsigned int> evicted;
     if (pages == 0 || bufRAM.empty()) return evicted;
 
-    struct Item { size_t nextPos; unsigned int frameIdx; };
-    std::vector<Item> candidates;
-    candidates.reserve(bufRAM.size());
-
-    const size_t INF = std::numeric_limits<size_t>::max();
-
+    // track Frames
+    std::vector<unsigned int> frames;
     for (unsigned int i = 0; i < bufRAM.size(); ++i) {
-        unsigned int pageId = bufRAM[i].id; // use Page::id used elsewhere in code
-        size_t nextPos = INF;
-        auto it = mOccurrences.find(pageId);
-        if (it != mOccurrences.end() && !it->second.empty()) {
-            // front is the next future occurrence (>= mCurIndex)
-            nextPos = it->second.front();
-        }
-        candidates.push_back({ nextPos, i });
+        frames.push_back(i);
     }
 
-    std::sort(candidates.begin(), candidates.end(), [](const Item &a, const Item &b) {
-        if (a.nextPos == b.nextPos) return a.frameIdx < b.frameIdx;
-        return a.nextPos > b.nextPos; // farthest (or INF) first
-    });
+    // Scan access sequence
+    for (size_t i = mCurIndex; i < mAccessSequence.size(); ++i) {
+        unsigned int futurePageId = mAccessSequence[i];
 
-    for (unsigned int k = 0; k < pages && k < candidates.size(); ++k) {
-        evicted.push_back(candidates[k].frameIdx);
+        // Remove frames when their page is found
+        for (size_t j = 0; j < frames.size(); ++j) {
+            unsigned int f = frames[j];
+            if (bufRAM[f].id == futurePageId) {
+                frames.erase(frames.begin() + j);
+                break;  // Only remove first match
+            }
+        }
+
+        // exit once frame equals the requested pages
+        if (frames.size() <= pages) break;
+    }
+
+    // Evict from frame those who will no longer be used
+    for (unsigned int k = 0; k < pages && k < frames.size(); ++k) {
+        evicted.push_back(frames[k]);
+    }
+
+    // Safeguard to ensure perfect Evict
+    if (evicted.size() < pages) {
+        // This shouldn't normally happen, but as a safeguard:
+        std::unordered_set<unsigned int> alreadyEvicted(evicted.begin(), evicted.end());
+        for (unsigned int i = 0; i < bufRAM.size() && evicted.size() < pages; ++i) {
+            if (alreadyEvicted.find(i) == alreadyEvicted.end()) {
+                evicted.push_back(i);
+            }
+        }
     }
 
     printf("\n [OPT]-Finish \n");
