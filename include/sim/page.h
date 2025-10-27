@@ -8,7 +8,7 @@ private:
     static unsigned int mIdCount;
     unsigned int mPhysicalDir = 0;
     unsigned int mLastAccess = 0;
-    unsigned int usageRate = 0;
+    //unsigned int usageRate = 0;
     bool mInRealMem = 0;
     bool mSecondChance = 0;
 

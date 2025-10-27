@@ -6,6 +6,7 @@
 
 #include "sim/page.h"
 #include "alg/algorithm.h"
+#include <unordered_set>
 
 class Mru : public IAlgorithm {
 public:
@@ -17,7 +18,7 @@ public:
     
 private:
     std::deque<unsigned int> mQueue;
-    std::unordered_set<unsigned int> mLookUp;
+    std::unordered_set<unsigned int> mSet;
 };
 
 #endif // MRU_H

@@ -1,7 +1,8 @@
+#include <algorithm>
 #include "alg/mru.h"
 #include <vector>
 #include <iostream>
-#include <algorithm>
+#include <unordered_set>
 
 ////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -31,7 +32,7 @@ void Mru::markUsage(unsigned int pageId) {
 
 ////////////////////////////////////////////////////////////////////////
 // EXECUTION
-Mru::execute(const std::vector<Page>& bufRAM, unsigned int pages) {
+std::vector<unsigned int> Mru::execute(const std::vector<Page>& bufRAM, unsigned int pages) {
     printf("\n [MRU]-Start \n");
     std::vector<unsigned int> evicted;
     if (bufRAM.empty() || pages == 0) return evicted;
