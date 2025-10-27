@@ -26,7 +26,10 @@ int main(int argc, char *argv[]) {
     //computer.mmu.initAlgorithm(AlgType::FIFO);
     
     // Second Chance
-    computer.mmu.initAlgorithm(AlgType::SC);
+    //computer.mmu.initAlgorithm(AlgType::SC);
+
+    // LRU
+    computer.mmu.initAlgorithm(AlgType::LRU);
 
 
     unsigned int pid = 1;
