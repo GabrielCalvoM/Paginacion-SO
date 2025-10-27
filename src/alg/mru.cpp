@@ -51,7 +51,7 @@ std::vector<unsigned int> Mru::execute(const std::vector<Page>& bufRAM, unsigned
     }
 
     // Filter Queue to keep only RAM
-    std::queue<unsigned int> newQueue;
+    std::deque<unsigned int> newQueue;
     newQueue.clear();
     for (unsigned int id : mQueue) {
         if (currentIds.find(id) != currentIds.end()) {
