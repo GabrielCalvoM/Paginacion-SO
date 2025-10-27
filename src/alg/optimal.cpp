@@ -1,10 +1,12 @@
+#include <algorithm>
 #include "alg/optimal.h"
 #include "sim/intset.h"
 
 #include <vector>
 #include <iostream>
 #include <limits>
-#include <algorithm>
+#include <unordered_set>
+
 
 // Constructor
 Optimal::Optimal(std::vector<Page>& bufRAM, const std::vector<unsigned int>& accessSequence)
