@@ -7,6 +7,7 @@
 
 #include "alg/optimal.h"
 #include "alg/fifo.h"
+#include "alg/second_chance.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- CPP IMPLEMENTATION ---
@@ -32,6 +33,8 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
     // fifo
     else if (type == AlgType::FIFO) mAlgorithm = std::make_unique<Fifo>(mRam);
+    // second chance
+    else if (type == AlgType::SC) mAlgorithm = std::make_unique<SecondChance>(mRam);
     // Fallback OPT
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
 }
@@ -208,8 +211,8 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         // ver el futuro si OPT
         if (mAlgorithm) mAlgorithm->optForesee(pg.id);
 
-        //si ya esta en RAM no hacer nada (lo del pass de Carlos)
-        if (pg.isInRealMem()) continue;
+        //si ya esta en RAM marcar para "second chance"
+        if (pg.isInRealMem()) { pg.setSecondChance(true); continue; }
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < mRam.capacity()) {
