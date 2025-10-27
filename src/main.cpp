@@ -13,11 +13,7 @@ int main(int argc, char *argv[]) {
     std::mutex mtx;
     std::condition_variable cv;
     Computer computer(cv, mtx);
-    std::vector<unsigned int> futureSequence; 
-    computer.mmu.initAlgorithm(AlgType::OPT, futureSequence);
-
-    // usar FIFO para probar
-    computer.mmu.initAlgorithm(AlgType::FIFO);
+    
     // Sequence
     std::vector<unsigned int> futureSequence;
 
