@@ -2,7 +2,8 @@
 #define FIFO_H
 
 #include <vector>
-#include <queue>
+#include <deque>
+#include <unordered_set>
 
 #include "sim/page.h"
 #include "alg/algorithm.h"
@@ -12,7 +13,10 @@ public:
     Fifo(std::vector<Page>&);
     std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages) override;
 private:
-    unsigned int mNext = 0; // indice circular del siguiente frame a evictar
+    // FIFO queue of page ids present in RAM, front = oldest
+    
+    std::deque<unsigned int> mQueue;
+    std::unordered_set<unsigned int> mSet;
 };
 
 #endif // FIFO_H
