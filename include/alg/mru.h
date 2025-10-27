@@ -7,6 +7,7 @@
 #include "sim/page.h"
 #include "alg/algorithm.h"
 #include <unordered_set>
+#include <unordered_map>
 
 class Mru : public IAlgorithm {
 public:

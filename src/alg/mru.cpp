@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 
 ////////////////////////////////////////////////////////////////////////
 // Constructor
