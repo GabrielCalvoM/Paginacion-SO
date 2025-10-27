@@ -85,7 +85,7 @@ void MemoryManagementUnit::printState() const
 // --- EXEC INSTRUCTION  ---
 void MemoryManagementUnit::executeIntSet(const IntSet &iset) 
 {
-    Instruction* i;
+    const Instruction* i;
     while ((i = iset.next())) {
         if (!i) continue;
 
