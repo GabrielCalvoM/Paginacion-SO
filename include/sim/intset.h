@@ -51,6 +51,9 @@ public:
 
     IntSet() = default;
 
+    const decltype(mVec) getVec() const { return mVec; }
+    const std::vector<unsigned int> getAccessSequence() const;
+
     void emptyVec() { mVec.clear(); }
 
     void reset() const{ mIt = mVec.cbegin(); mItNull = false; }
@@ -70,6 +73,8 @@ public:
     }
 
     bool pushInstruction(const Instruction ins);
+
+    void copyInstructions(const decltype(mVec) vec) { emptyVec(); for (auto i : vec) mVec.push_back(i); }
 };
 
 #endif // INSTRUCTION_H

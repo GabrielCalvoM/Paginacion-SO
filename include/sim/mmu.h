@@ -40,6 +40,9 @@ public:
     // --- IntSet ---
     void executeIntSet(const IntSet &iset);
 
+    // --- Instruction ---
+    void executeInstruction(const Instruction *i);
+
     // --- Methods Process ---
     unsigned int newPtr(unsigned int pid, size_t size);  
     void usePtr(unsigned int ptrId);

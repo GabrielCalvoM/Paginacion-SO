@@ -82,45 +82,51 @@ void MemoryManagementUnit::printState() const
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// --- EXEC INSTRUCTION  ---
+// --- EXEC INT SET  ---
 void MemoryManagementUnit::executeIntSet(const IntSet &iset) 
 {
     const Instruction* i;
     while ((i = iset.next())) {
         if (!i) continue;
 
-        unsigned int p = i->param1;
-        size_t bytes = i->param2;
+        executeInstruction(i);
+    }
+}
 
-        switch (i->type) {
-            // Call New
-            case newI: {
-                newPtr(p, bytes);
-                break;
-            }
+// --- EXEC INSTRUCTION  ---
+void MemoryManagementUnit::executeInstruction(const Instruction *i) 
+{
+    unsigned int p = i->param1;
+    
+    switch (i->type) {
+        // Call New
+        case newI: {
+            size_t bytes = i->param2;
+            newPtr(p, bytes);
+            break;
+        }
 
-            // Call Use
-            case useI: {
-                usePtr(p);
-                break;
-            }
+        // Call Use
+        case useI: {
+            usePtr(p);
+            break;
+        }
 
-            // Call Del
-            case delI: {
-                delPtr(p);
-                break;
-            }
+        // Call Del
+        case delI: {
+            delPtr(p);
+            break;
+        }
 
-            // Call Kill
-            case killI: {
-                kill(p);
-                break;
-            }
+        // Call Kill
+        case killI: {
+            kill(p);
+            break;
+        }
 
-            // Fall Back
-            default: {
-                printf("[ERROR] = Instruction Not Valid ");
-            }
+        // Fall Back
+        default: {
+            printf("[ERROR] = Instruction Not Valid ");
         }
     }
 }

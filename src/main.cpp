@@ -10,7 +10,9 @@ int main(int argc, char *argv[]) {
     printf("[OS]-[Proyecto 2]\n");
 
     // Build Simulation
-    Computer computer;
+    std::mutex mtx;
+    std::condition_variable cv;
+    Computer computer(cv, mtx);
     std::vector<unsigned int> futureSequence; 
     computer.mmu.initAlgorithm(AlgType::OPT, futureSequence);
 

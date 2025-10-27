@@ -18,6 +18,11 @@ namespace {
 static inline void insertInstruction(IntSet *set, std::string &buffer, IntTypeE instruction, unsigned int param);
 static inline void insertInstruction(IntSet *set, std::string &buffer, IntTypeE instruction, unsigned int param1, unsigned int param2);
 
+const std::vector<unsigned int> IntSet::getAccessSequence() const {
+    std::vector<unsigned int> vec;
+    return vec;
+}
+
 std::string IntSet::generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
     std::string buffer;
 
