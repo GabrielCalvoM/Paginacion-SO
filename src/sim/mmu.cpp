@@ -366,8 +366,21 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     // OJOOOO
 }
 
-void MemoryManagementUnit::kill(unsigned int ptrId)
+//////////////////////////////////////////////////////////////////////////////////
+// --- PROC METHOD: KILL PTR ---
+void MemoryManagementUnit::kill(unsigned int pid)
 {
-    // TODO: replace placeholder with real logic
-    (void)ptrId;
+    auto it = mProcessList.find(pid);
+    if (it == mProcessList.end()) return;
+
+    Process* proc = it->second;
+    if (proc) {
+        std::vector<unsigned int> ptrs = proc->getPointers();
+        for (unsigned int ptr : ptrs) {
+            delPtr(ptr);
+        }
+        delete proc;
+    }
+
+    mProcessList.erase(it);
 }
