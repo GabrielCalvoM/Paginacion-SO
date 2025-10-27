@@ -174,7 +174,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             frame.setPhysicalDir(idx);
             
             // Copy Mut Attributes
-            // const Page &src  = newPages[placedPages];
+            const Page &src  = newPages[placedPages];
 
             ++placedPages;
         }

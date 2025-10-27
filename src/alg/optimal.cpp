@@ -72,6 +72,10 @@ std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsi
         }
     }
 
+    std::cout << "\n [OPT]-Evicting: ";
+    for (unsigned int idx : evicted) std::cout << idx << " ";
+    std::cout << "\n";
+
     printf("\n [OPT]-Finish \n");
     return evicted;
 }
