@@ -29,7 +29,7 @@ std::vector<unsigned int> Random::execute(const std::vector<Page> &bufRAM, unsig
         roulette[i] = i;
 
     // Choose random and select the first in range [0, pages]
-    std::shuffle(roulette.begin(), roulette.end(), mRng)
+    std::shuffle(roulette.begin(), roulette.end(), mRng);
     evicted.insert(evicted.end(), roulette.end(), roulette.begin() + pages);
 
     std::cout << "\n [FIFO]-Evicting: ";
