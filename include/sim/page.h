@@ -1,6 +1,8 @@
 #ifndef PAGE_H
 #define PAGE_H
 
+#include "constants.h"
+
 class Page {
 private:
     static unsigned int mIdCount;
@@ -10,7 +12,7 @@ private:
     bool mSecondChance = 0;
 
 public:
-    static const unsigned int pageSize = 4096; // 4 KB
+    static const unsigned int pageSize = Consts::PAGE_SIZE; // 4 KB
     const unsigned int id;
 
     Page();

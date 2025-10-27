@@ -11,6 +11,7 @@
 #include "sim/pointer.h"
 #include "sim/process.h"
 #include "alg/algorithm.h"
+#include "constants.h"
 
 
 class MemoryManagementUnit {
@@ -22,7 +23,7 @@ private:
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
 public:
-    static const unsigned int ramSize = 409600; // 400 KB
+    static const unsigned int ramSize = Consts::MAX_RAM; // 400 KB
 
     MemoryManagementUnit();
     ~MemoryManagementUnit();
