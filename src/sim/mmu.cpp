@@ -8,6 +8,7 @@
 #include "alg/optimal.h"
 #include "alg/fifo.h"
 #include "alg/second_chance.h"
+#include "alg/lru.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- CPP IMPLEMENTATION ---
@@ -35,8 +36,10 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else if (type == AlgType::FIFO) mAlgorithm = std::make_unique<Fifo>(mRam);
     // second chance
     else if (type == AlgType::SC) mAlgorithm = std::make_unique<SecondChance>(mRam);
+    // LRU
+    else if (type == AlgType::LRU) mAlgorithm = std::make_unique<Lru>(mRam);
     // Fallback OPT
-    else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence); 
+    else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 }
 
 // --- DEBUG ---
