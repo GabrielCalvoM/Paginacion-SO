@@ -2,11 +2,13 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
-#include <unordered_set>
-#include <unordered_map>
+#include <random>
+#include <chrono>
 
 // RANDOM BUILDER
-Random::Random(std::vector<Page> &ram) : IAlgorithm(ram) { }
+Random::Random(std::vector<Page> &ram, unsigned int seed) : IAlgorithm(ram) { 
+    mRng.seed(seed);
+}
 
 // EXECUTION
 std::vector<unsigned int> Random::execute(const std::vector<Page> &bufRAM, unsigned int pages) 
@@ -15,20 +17,14 @@ std::vector<unsigned int> Random::execute(const std::vector<Page> &bufRAM, unsig
     std::vector<unsigned int> evicted;
     if (pages == 0 || bufRAM.empty()) return evicted;
 
-    // clone contents
-    std::vector<Page> roulette;
-    for (const Page &p : bufRAM) {
-        roulette.push_back(p);
-    }
+    // Define array
+    std::vector<unsigned int> roulette(bufRAM.size());
+    for (unsigned int i = 0; i < bufRAM.size(); ++i)
+        roulette[i] = i;
 
-    // Choose random
-    int ev_count = 0;
-    while (ev_count != pages) {
-        int idx = rand() % roulette.size();
-        const Page& p = roulette.pop(idx);
-        evicted.push_back(p.id);
-        ev_count++; 
-    }
+    // Choose random and select the first in range [0, pages]
+    std::shuffle(roulette.begin(), roulette.end(), mRng)
+    evicted.insert(evicted.end(), roulette.end(), roulette.begin() + pages);
 
     std::cout << "\n [FIFO]-Evicting: ";
     for (unsigned int idx : evicted) std::cout << idx << " ";
