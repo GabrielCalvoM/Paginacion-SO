@@ -205,6 +205,9 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     for (unsigned int i = 0; i < pages.size(); ++i) {
         Page &pg = pages[i];
 
+        // ver el futuro si OPT
+        if (mAlgorithm) mAlgorithm->optForesee(pg.id);
+
         //si ya esta en RAM no hacer nada (lo del pass de Carlos)
         if (pg.isInRealMem()) continue;
 
@@ -366,8 +369,21 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     // OJOOOO
 }
 
-void MemoryManagementUnit::kill(unsigned int ptrId)
+//////////////////////////////////////////////////////////////////////////////////
+// --- PROC METHOD: KILL PTR ---
+void MemoryManagementUnit::kill(unsigned int pid)
 {
-    // TODO: replace placeholder with real logic
-    (void)ptrId;
+    auto it = mProcessList.find(pid);
+    if (it == mProcessList.end()) return;
+
+    Process* proc = it->second;
+    if (proc) {
+        std::vector<unsigned int> ptrs = proc->getPointers();
+        for (unsigned int ptr : ptrs) {
+            delPtr(ptr);
+        }
+        delete proc;
+    }
+
+    mProcessList.erase(it);
 }

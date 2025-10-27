@@ -36,6 +36,9 @@ public:
     // Returns a list of indices in mRam that should be evicted (ordered by eviction preference).
     virtual std::vector<unsigned int> execute(const std::vector<Page>& bufRAM, unsigned int pages) = 0;
 
+    // future foresee 
+    virtual void optForesee(unsigned int) { }
+
 };
 
 #endif // ALGORITHM_H
