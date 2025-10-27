@@ -1,10 +1,12 @@
+#include <algorithm>
 #include "alg/optimal.h"
 #include "sim/intset.h"
 
 #include <vector>
 #include <iostream>
 #include <limits>
-#include <algorithm>
+#include <unordered_set>
+
 
 // Constructor
 Optimal::Optimal(std::vector<Page>& bufRAM, const std::vector<unsigned int>& accessSequence)
@@ -71,6 +73,10 @@ std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsi
             }
         }
     }
+
+    std::cout << "\n [OPT]-Evicting: ";
+    for (unsigned int idx : evicted) std::cout << idx << " ";
+    std::cout << "\n";
 
     printf("\n [OPT]-Finish \n");
     return evicted;

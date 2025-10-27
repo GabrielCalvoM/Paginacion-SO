@@ -19,6 +19,19 @@ int main(int argc, char *argv[]) {
     // usar FIFO para probar
     computer.mmu.initAlgorithm(AlgType::FIFO);
     // Sequence
+    std::vector<unsigned int> futureSequence;
+
+    // Pruebas de algoritmos
+    
+    // Opt
+    //computer.mmu.initAlgorithm(AlgType::OPT, futureSequence);
+    
+    // FIFO
+    //computer.mmu.initAlgorithm(AlgType::FIFO);
+    
+    // Second Chance
+    computer.mmu.initAlgorithm(AlgType::SC);
+
 
     unsigned int pid = 1;
     size_t bytes = 100 * Page::pageSize;

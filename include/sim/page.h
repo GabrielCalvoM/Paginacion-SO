@@ -8,6 +8,7 @@ private:
     static unsigned int mIdCount;
     unsigned int mPhysicalDir = 0;
     unsigned int mLastAccess = 0;
+    //unsigned int usageRate = 0;
     bool mInRealMem = 0;
     bool mSecondChance = 0;
 
@@ -25,6 +26,7 @@ public:
     // --- Setters ---
     void setPhysicalDir(unsigned int);
     void setInRealMem(bool);
+    void setAccess(int);
     void setSecondChance(bool);
 
 };
