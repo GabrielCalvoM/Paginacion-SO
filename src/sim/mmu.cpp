@@ -30,8 +30,9 @@ MemoryManagementUnit::~MemoryManagementUnit() {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
 // --- SETTERS ---
-void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence) 
+void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence, unsigned int seed) 
 {
     // Init mAlgorithm
     if (type == AlgType::OPT) mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
@@ -43,10 +44,23 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else if (type == AlgType::MRU) mAlgorithm = std::make_unique<Mru>(mRam);
     // LRU
     else if (type == AlgType::LRU) mAlgorithm = std::make_unique<Lru>(mRam);
+    // Random
+    else if (type == AlgType::RND) mAlgorithm = std::make_unique<Random>(mRam, );
     // Fallback OPT
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 }
 
+void MemoryManagementUnit::setProcCount(unsigned int n) {
+    // clear previous procs
+    reset();
+
+    for (int i = 0; i < n; ++i) {
+        Process& p = Process(i);
+        mProcessList
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 // --- DEBUG ---
 void MemoryManagementUnit::printState() const
 {
@@ -143,18 +157,11 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
 
 // AUX ADD TIME
 void MemoryManagementUnit::addTime(bool fault) {    
-    if (mAlgorithm->type == AlgType::OPT) {
-        if (fault) {
-            optTime += 5;
-        } else {
-            optTime += 1;
-        }
+    if (fault) {
+        algTime += 5;
+        thrashTime += 5;
     } else {
-        if (fault) {
-            algTime += 5;
-        } else {
-            algTime += 1;
-        }
+        algTime += 1;
     }
 }
 
@@ -458,6 +465,9 @@ void MemoryManagementUnit::kill(unsigned int pid)
     }
 
     mProcessList.erase(it);
+
+    // DEC Counter of PROCS
+    procCount--;
 }
 
 /////////////////////////////////////////////////////////////////////////////////

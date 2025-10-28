@@ -1,7 +1,7 @@
 #include "sim/process.h"
 
 // Constructor
-Process::Process(unsigned int &idCount) : pId(++idCount) {}
+Process::Process(unsigned int pid) : pId(pid) {}
 
 // --- Getters ---
 std::vector<unsigned int> Process::getPointers() const { return mPointers; }

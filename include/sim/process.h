@@ -11,7 +11,7 @@ private:
 public:
     const unsigned int pId;
 
-    Process(unsigned int &idCount);
+    Process(unsigned int pid);
 
     // --- Getters ---
     std::vector<unsigned int> getPointers() const;

@@ -23,10 +23,10 @@ private:
     std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
-    unsigned int optTime = 0;
+    unsigned int trashTime = 0;
     unsigned int algTime = 0;
 
-    unsigned int procIdCount = 0;
+    unsigned int procCount = 0;
     unsigned int ptrIdCount = 0;
     unsigned int pageIdCount = 0;
     
@@ -49,9 +49,13 @@ public:
     }
     const unsigned int getLoadedPages() const { return mRam.size(); }
     const unsigned int getUnloadedPages() const { return mDisk.size(); }
+    const unsigned int getAlgTime() const { return algTime; }
+    const unsigned int getTrashTime() const { return trashTime; }
+
 
     // --- Setters ---
-    void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={});
+    void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={}, unsigned int seed=0);
+    void setProcCount(unsigned int n);
     
     // --- Debug ---
     void printState() const;
