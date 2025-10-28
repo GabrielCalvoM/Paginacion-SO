@@ -105,12 +105,17 @@ void MemoryManagementUnit::printState() const
 // --- EXEC INT SET  ---
 void MemoryManagementUnit::executeIntSet(const IntSet &iset) 
 {
+    std::cout << "[DBG] MMU: executeIntSet called\n";
     const Instruction* i;
+    unsigned int executed = 0;
     while ((i = iset.next())) {
         if (!i) continue;
 
         executeInstruction(i);
+        ++executed;
     }
+
+    std::cout << "[DBG] MMU: executeIntSet finished, executed = " << executed << std::endl;
 }
 
 // --- EXEC INSTRUCTION  ---

@@ -11,6 +11,15 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         this->mOptSimulation.copyInstructions(mInstructions);
         this->mAlgSimulation.copyInstructions(mInstructions);
 
+        // Debug: verify instructions were copied and access-sequence built
+        auto seq = mInstructions.getAccessSequence();
+        std::cout << "[DBG] App: IntSet access sequence size = " << seq.size() << std::endl;
+        if (!seq.empty()) {
+            std::cout << "[DBG] App: first entries:";
+            for (size_t i = 0; i < seq.size() && i < 10; ++i) std::cout << " " << seq[i];
+            std::cout << std::endl;
+        }
+
         this->mOptSimulation.mmu.initAlgorithm(AlgTypeE::OPT, mInstructions.getAccessSequence());
     });
     mWindow.simulationData().algorithmConnect([this](AlgTypeE type) { this->mAlgSimulation.mmu.initAlgorithm(type); });
