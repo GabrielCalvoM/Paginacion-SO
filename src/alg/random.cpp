@@ -6,7 +6,7 @@
 #include <chrono>
 
 // RANDOM BUILDER
-Random::Random(std::vector<Page> &ram) : IAlgorithm(ram) {
+Random::Random(std::vector<Page> &ram, unsigned int seed) : IAlgorithm(ram) {
     // random seed if not provided
     if (seed == 0) {
         mRng.seed( 
