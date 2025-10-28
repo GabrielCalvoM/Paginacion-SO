@@ -22,6 +22,8 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         mcv.wait(lock, [this]{ return mIsRunning.load(); });
         lock.unlock();
 
+        mComputer.mmu.printState();
+
         Computer::setPaused(false);
     });
     mWindow.simulationView().pauseConnect([this]() {
@@ -29,6 +31,8 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         std::unique_lock<std::mutex> lock(mmtx);
         Computer::setPaused(true);
         mcv.notify_all();
+
+        
     });
     mWindow.simulationView().resetConnect([this]() {
         mResetRequest.store(true);
