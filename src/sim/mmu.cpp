@@ -261,20 +261,20 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 
         // si ya esta en RAM -> mark access for algorithms that need it
         if (pg.isInRealMem()) { 
-        // mark second chance bit
-        pg.setSecondChance(true);
-        if (mAlgorithm) mAlgorithm->onAccess(pg.id);
-        continue; 
+            // mark second chance bit
+            pg.setSecondChance(true);
+            if (mAlgorithm) mAlgorithm->onAccess(pg.id);
+            continue; 
         }
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < mRam.capacity()) {
-        pg.setInRealMem(true);
-        pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-        mRam.push_back(pg); // copia actualizada a RAM
-        // notify algorithm of insert
-        if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
-        continue;
+            pg.setInRealMem(true);
+            pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+            mRam.push_back(pg); // copia actualizada a RAM
+            // notify algorithm of insert
+            if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
+            continue;
         }
 
         //no hay espacio -> pedir al algoritmo indices a desalojar 
