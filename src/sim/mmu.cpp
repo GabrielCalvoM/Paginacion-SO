@@ -1,6 +1,6 @@
 #include "sim/mmu.h"
 
-#include "algorithm.h"
+#include <algorithm>
 #include <iostream>
 #include <new>
 #include <set>
@@ -141,8 +141,8 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
 }
 
 // AUX ADD TIME
-void addTime(bool fault) {
-    if (mAlgorithm->type == AlgType.OPT) {
+void MemoryManagementUnit::addTime(bool fault) {    
+    if (mAlgorithm->type == AlgType::OPT) {
         if (fault) {
             optTime += 5;
         } else {

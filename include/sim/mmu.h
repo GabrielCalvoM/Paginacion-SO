@@ -42,6 +42,7 @@ public:
 
     // --- IntSet ---
     void executeIntSet(const IntSet &iset);
+    void addTime(bool fault);
 
     // --- Instruction ---
     void executeInstruction(const Instruction *i);
