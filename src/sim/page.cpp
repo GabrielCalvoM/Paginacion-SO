@@ -1,10 +1,7 @@
 #include "sim/page.h"
 
-// Static Attributes
-unsigned int Page::mIdCount = 0;
-
 // Constructor
-Page::Page(int space) : id(++mIdCount), space(space) { }
+Page::Page(int space, unsigned int &idCount) : id(++idCount), space(space) { }
 
 // --- Getters ---
 unsigned int Page::getPhysicalDir() const { return mPhysicalDir; }

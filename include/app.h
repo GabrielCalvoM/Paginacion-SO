@@ -4,6 +4,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <thread>
 
 #include "sim/computer.h"
 #include "UI/gtk_paginacion.h"
@@ -12,6 +13,10 @@ class Application {
 private:
     std::mutex mmtx;
     std::condition_variable mcv;
+    
+    std::thread mSimThread;
+    std::thread mOptThread;
+    std::thread mAlgThread;
 
     Computer mOptSimulation = Computer(mcv, mmtx);
     Computer mAlgSimulation = Computer(mcv, mmtx);

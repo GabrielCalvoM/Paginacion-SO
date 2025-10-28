@@ -5,13 +5,13 @@
 
 class Process {
 private:
-    static unsigned int mIdCount;
+    unsigned int mIdCount;
     std::vector<unsigned int> mPointers;
 
 public:
     const unsigned int pId;
 
-    Process();
+    Process(unsigned int &idCount);
 
     // --- Getters ---
     std::vector<unsigned int> getPointers() const;

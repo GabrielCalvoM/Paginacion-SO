@@ -5,7 +5,7 @@
 
 class Page {
 private:
-    static unsigned int mIdCount;
+    unsigned int mIdCount = 0;
     unsigned int mPhysicalDir = 0;
     unsigned int mLastAccess = 0;
     
@@ -18,7 +18,7 @@ public:
     static const unsigned int pageSize = Consts::PAGE_SIZE; // 4 KB
     const unsigned int id;
 
-    Page(int space);
+    Page(int space, unsigned int &idCount);
 
     // --- Getters ---
     unsigned int getPhysicalDir() const;

@@ -1,6 +1,5 @@
 #include "app.h"
 
-#include <thread>
 #include <iostream>
 
 std::vector<MMUModel> getMMU(Computer &sim);
@@ -17,14 +16,16 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
     mWindow.simulationData().algorithmConnect([this](AlgTypeE type) { this->mAlgSimulation.mmu.initAlgorithm(type); });
     mWindow.simulationView().ralentizationConnect([this](unsigned int ms) { Computer::setWaitMs(ms); });
     mWindow.simulationView().playConnect([this]() {
+        if (mFinishedCount.load() >= 2) return;
         std::unique_lock<std::mutex> lock(mmtx);
-        if (!mIsRunning.load()) std::thread([=]{ runSimulation(); }).detach();
+        if (!mIsRunning.load()) mSimThread = std::thread([=]{ runSimulation(); });
         mcv.wait(lock, [this]{ return mIsRunning.load(); });
         lock.unlock();
 
         Computer::setPaused(false);
     });
     mWindow.simulationView().pauseConnect([this]() {
+        if (mFinishedCount.load() >= 2) return;
         std::unique_lock<std::mutex> lock(mmtx);
         Computer::setPaused(true);
         mcv.notify_all();
@@ -32,7 +33,9 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
     mWindow.simulationView().resetConnect([this]() {
         mResetRequest.store(true);
         std::unique_lock<std::mutex> lock(mmtx);
+        Computer::setPaused(false);
         mcv.notify_all();
+        lock.unlock();
         resetSimulation();
         mResetRequest.store(false);
     });
@@ -47,23 +50,24 @@ void Application::run() {
 void Application::runSimulation() {
     mIsRunning.store(true);
 
-    std::thread tOpt([&]{ runComputer(mOptSimulation); });
-    std::thread tAlg([&]{ runComputer(mAlgSimulation); });
+    mOptThread = std::thread([&]{ runComputer(mOptSimulation); });
+    mAlgThread = std::thread([&]{ runComputer(mAlgSimulation); });
 
     mcv.notify_all();
     int i = 0;
 
-    while (!mResetRequest.load() && mIsRunning.load() && mFinishedCount < 2) {
+    while (!mResetRequest.load() && mIsRunning.load() && mFinishedCount.load() < 2) {
         std::unique_lock<std::mutex> lock(mmtx);
         std::cout << "Simulación: " << ++i << std::endl;
         mcv.wait(lock, [&] { return mWaitCount.load() >= 2 || mFinishedCount.load() >= 2 || mResetRequest.load(); });
+        if (mResetRequest.load()) break;
         mWaitCount.store(0);
 
         lock.unlock();
 
-        //mWindow.simulationView().setOptMMU(getMMU(mOptSimulation));
+        mWindow.simulationView().setOptMMU(getMMU(mOptSimulation));
         mWindow.simulationView().setOptInfo(getInfo(mOptSimulation));
-        //mWindow.simulationView().setAlgMMU(getMMU(mAlgSimulation));
+        mWindow.simulationView().setAlgMMU(getMMU(mAlgSimulation));
         mWindow.simulationView().setAlgInfo(getInfo(mAlgSimulation));
         
         std::unique_lock<std::mutex> lock2(mmtx);
@@ -72,8 +76,8 @@ void Application::runSimulation() {
         mcv.notify_all();
     }
     
-    tOpt.join();
-    tAlg.join();
+    mOptThread.join();
+    mAlgThread.join();
 
     mIsRunning.store(false);
     
@@ -99,6 +103,7 @@ void Application::runComputer(Computer &sim) {
 }
 
 void Application::resetSimulation() {
+    mSimThread.join();
     resetComputer(mOptSimulation);
     resetComputer(mAlgSimulation);
 

@@ -9,13 +9,13 @@ namespace {
         static const MMUColumns columns;
         Gtk::TreeModelColumn<guint> id;
         Gtk::TreeModelColumn<guint> pid;
-        Gtk::TreeModelColumn<gboolean> loaded;
+        Gtk::TreeModelColumn<bool> loaded;
         Gtk::TreeModelColumn<guint> lAddr;
         Gtk::TreeModelColumn<guint> mAddr;
         Gtk::TreeModelColumn<guint> dAddr;
         Gtk::TreeModelColumn<guint> loadedTime;
-        Gtk::TreeModelColumn<gboolean> mark;
-        MMUColumns() { add(id); add(pid); add(loaded); add(lAddr); add(mAddr); add(dAddr); add(loadedTime); }
+        Gtk::TreeModelColumn<bool> mark;
+        MMUColumns() { add(id); add(pid); add(loaded); add(lAddr); add(mAddr); add(dAddr); add(loadedTime); add(mark); }
 
     };
     const MMUColumns MMUColumns::columns;

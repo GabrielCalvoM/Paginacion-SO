@@ -25,6 +25,10 @@ private:
     
     unsigned int optTime = 0;
     unsigned int algTime = 0;
+
+    unsigned int procIdCount = 0;
+    unsigned int ptrIdCount = 0;
+    unsigned int pageIdCount = 0;
     
 public:
     static const unsigned int ramSize = Consts::MAX_RAM; // 400 KB

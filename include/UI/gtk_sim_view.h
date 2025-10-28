@@ -10,12 +10,12 @@
 typedef struct MMUModel {
     guint id;
     guint pid;
-    gboolean loaded;
+    bool loaded;
     guint lAddr;
     guint mAddr;
     guint dAddr;
     guint loadedTime;
-    gboolean mark;
+    bool mark;
 } MMUModel;
 
 typedef struct InfoModel {

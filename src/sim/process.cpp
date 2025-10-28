@@ -1,10 +1,7 @@
 #include "sim/process.h"
 
-// Static Attributes
-unsigned int Process::mIdCount = 0;
-
 // Constructor
-Process::Process() : pId(++mIdCount) {}
+Process::Process(unsigned int &idCount) : pId(++idCount) {}
 
 // --- Getters ---
 std::vector<unsigned int> Process::getPointers() const { return mPointers; }

@@ -170,8 +170,8 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     if (size % Page::pageSize != 0) ++pages;
 
     // Create Pointer and assign Pages
-    Pointer ptr;
-    ptr.assignPages(static_cast<int>(pages), size);
+    Pointer ptr(ptrIdCount);
+    ptr.assignPages(static_cast<int>(pages), size, pageIdCount);
     std::vector<Page> &newPages = ptr.getPages();
 
 
@@ -227,7 +227,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     auto proc = mProcessList.find(pid);
     
     if (proc == mProcessList.end()) {
-        Process* p = new Process();
+        Process* p = new Process(procIdCount);
         mProcessList[pid] = p;
         p->assignPtr(ptr.id);
     } else {
@@ -480,6 +480,11 @@ void MemoryManagementUnit::reset()
 
     // restaurar la capacidad reservada de RAM como en el constructor
     mRam.reserve(ramSize / Page::pageSize);
+
+    // reiniciar contador de id
+    procIdCount = 0;
+    ptrIdCount = 0;
+    pageIdCount = 0;
 
     // se puede meter un alg que mantenga estado interno 
 }
