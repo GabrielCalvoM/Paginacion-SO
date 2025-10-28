@@ -7,8 +7,9 @@
 #include "sim/page.h"      
 
 int main(int argc, char *argv[]) {
-    printf("[OS]-[Proyecto 2]\n");
-
+    printf("\n[OS]-[Proyecto 2]\n");
+    
+/*
     // Build Simulation
     std::mutex mtx;
     std::condition_variable cv;
@@ -17,7 +18,7 @@ int main(int argc, char *argv[]) {
     // Sequence
     std::vector<unsigned int> futureSequence;
 
-/*
+
     // // Pruebas de algoritmos
     
     // // Opt
