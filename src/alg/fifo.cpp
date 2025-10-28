@@ -8,6 +8,29 @@
 // FIFO implementation optimized for large queues.
 Fifo::Fifo(std::vector<Page> &ram) : IAlgorithm(ram) {}
 
+void Fifo::onInsert(unsigned int pageId, unsigned int frameIdx) {
+    // If not present, push to back
+    if (mSet.find(pageId) == mSet.end()) {
+        mQueue.push_back(pageId);
+        mSet.insert(pageId);
+    }
+}
+
+void Fifo::onAccess(unsigned int pageId) {
+    // FIFO doesn't change order on access
+    (void)pageId;
+}
+
+void Fifo::onEvict(unsigned int pageId, unsigned int frameIdx) {
+    // remove id if present
+    auto it = mSet.find(pageId);
+    if (it == mSet.end()) return;
+    mSet.erase(it);
+    // remove from deque
+    mQueue.erase(std::remove(mQueue.begin(), mQueue.end(), pageId), mQueue.end());
+    (void)frameIdx;
+}
+
 std::vector<unsigned int> Fifo::execute(const std::vector<Page> &bufRAM, unsigned int pages)
 {
     std::vector<unsigned int> evicted;

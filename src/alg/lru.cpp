@@ -16,6 +16,23 @@ void Lru::optForesee(unsigned int pageId) {
     mLastAccess[pageId] = mClock;
 }
 
+void Lru::onInsert(unsigned int pageId, unsigned int frameIdx) {
+    (void)frameIdx;
+    mClock++;
+    mLastAccess[pageId] = mClock;
+}
+
+void Lru::onAccess(unsigned int pageId) {
+    // treat access the same as optForesee
+    optForesee(pageId);
+}
+
+void Lru::onEvict(unsigned int pageId, unsigned int frameIdx) {
+    (void)frameIdx;
+    auto it = mLastAccess.find(pageId);
+    if (it != mLastAccess.end()) mLastAccess.erase(it);
+}
+
 std::vector<unsigned int> Lru::execute(const std::vector<Page> &bufRAM, unsigned int pages) {
     std::vector<unsigned int> evicted;
     if (bufRAM.empty() || pages == 0) return evicted;

@@ -16,6 +16,9 @@ public:
 
     void mruUpdate(unsigned int pageId);
     void markUsage(unsigned int pageId);
+    void onInsert(unsigned int pageId, unsigned int frameIdx) override;
+    void onAccess(unsigned int pageId) override;
+    void onEvict(unsigned int pageId, unsigned int frameIdx) override;
     
 private:
     std::deque<unsigned int> mQueue;

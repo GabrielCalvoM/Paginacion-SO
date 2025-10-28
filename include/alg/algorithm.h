@@ -38,6 +38,10 @@ public:
 
     // future foresee 
     virtual void optForesee(unsigned int) { }
+    // Event hooks (optional) - called by MMU when pages are inserted/accessed/evicted
+    virtual void onInsert(unsigned int pageId, unsigned int frameIdx) { }
+    virtual void onAccess(unsigned int pageId) { }
+    virtual void onEvict(unsigned int pageId, unsigned int frameIdx) { }
 
 };
 

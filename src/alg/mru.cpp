@@ -31,6 +31,23 @@ void Mru::markUsage(unsigned int pageId) {
     mruUpdate(pageId);
 }
 
+void Mru::onInsert(unsigned int pageId, unsigned int frameIdx) {
+    (void)frameIdx;
+    mruUpdate(pageId);
+}
+
+void Mru::onAccess(unsigned int pageId) {
+    mruUpdate(pageId);
+}
+
+void Mru::onEvict(unsigned int pageId, unsigned int frameIdx) {
+    (void)frameIdx;
+    auto it = mSet.find(pageId);
+    if (it == mSet.end()) return;
+    mSet.erase(it);
+    mQueue.erase(std::remove(mQueue.begin(), mQueue.end(), pageId), mQueue.end());
+}
+
 ////////////////////////////////////////////////////////////////////////
 // EXECUTION
 std::vector<unsigned int> Mru::execute(const std::vector<Page>& bufRAM, unsigned int pages) {

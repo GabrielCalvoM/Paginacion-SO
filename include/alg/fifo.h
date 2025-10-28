@@ -12,6 +12,9 @@ class Fifo : public IAlgorithm {
 public:
     Fifo(std::vector<Page>&);
     std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages) override;
+    void onInsert(unsigned int pageId, unsigned int frameIdx) override;
+    void onAccess(unsigned int pageId) override;
+    void onEvict(unsigned int pageId, unsigned int frameIdx) override;
 private:
     // FIFO queue of page ids present in RAM, front = oldest
     

@@ -57,9 +57,38 @@ void MemoryManagementUnit::printState() const
         auto ptrs = process->getPointers();
         if (ptrs.empty()) {
             std::cout << " NULL \n" << std::endl;
-            continue;
-        }
+        std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
 
+        for (unsigned int idx : evictIndex) {
+            if (placedPages >= pages) break; // FINISH
+            if (idx >= mRam.size()) continue; // GUARD
+
+            // Notify algorithm that this page will be evicted
+            unsigned int evictedPageId = mRam[idx].id;
+            if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
+
+            // move evicted to disk
+            Page ev = mRam[idx];
+            ev.setInRealMem(false);
+            ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+            mDisk.push_back(ev);
+
+            // move extra to frame
+            Page &frame = mRam[idx];
+            frame.setInRealMem(true);
+            frame.setPhysicalDir(idx);
+            
+            // Copy Mut Attributes
+            // const Page &src  = newPages[placedPages];
+
+            // Notify algorithm of insert of the new page occupying this frame
+            if (mAlgorithm) {
+                unsigned int newPageId = newPages[placedPages].id;
+                mAlgorithm->onInsert(newPageId, idx);
+            }
+
+            ++placedPages;
+        }
         for (unsigned int ptrId : ptrs) {
             std::cout << " Ptr(" << ptrId << ") --> \n";
 
@@ -159,6 +188,9 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
         mRam.push_back(pg);
 
+        // Notify algorithm of insertion
+        if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
+
         ++placedPages;
     }
 
@@ -220,14 +252,21 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         // ver el futuro si OPT
         if (mAlgorithm) mAlgorithm->optForesee(pg.id);
 
-        //si ya esta en RAM marcar para "second chance"
-        if (pg.isInRealMem()) { pg.setSecondChance(true); continue; }
+        // si ya esta en RAM -> mark access for algorithms that need it
+        if (pg.isInRealMem()) { 
+            // mark second chance bit
+            pg.setSecondChance(true);
+            if (mAlgorithm) mAlgorithm->onAccess(pg.id);
+            continue; 
+        }
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < mRam.capacity()) {
             pg.setInRealMem(true);
             pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
             mRam.push_back(pg); // copia actualizada a RAM
+            // notify algorithm of insert
+            if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
             continue;
         }
 
@@ -235,14 +274,18 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         std::vector<unsigned int> evictIdx = mAlgorithm->execute(mRam, 1);
         if (evictIdx.empty()) continue; // guard
 
-        unsigned int idx = evictIdx[0];
+    unsigned int idx = evictIdx[0];
         if (idx >= mRam.size()) continue; // guard
 
-        //mover la página evictada a DISCO
-        Page ev = mRam[idx];
-        ev.setInRealMem(false);
-        ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
-        mDisk.push_back(ev);
+    // Notify algorithm of eviction
+    unsigned int evictedPageId = mRam[idx].id;
+    if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
+
+    //mover la página evictada a DISCO
+    Page ev = mRam[idx];
+    ev.setInRealMem(false);
+    ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+    mDisk.push_back(ev);
         //colocar la página solicitada en el frame liberado
         Page &frame = mRam[idx];
         //reconstruye la pagina in-place
@@ -255,6 +298,8 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         //actualizar la página en la tabla de simbolos para reflejar que ahora esta en RAM
         pg.setInRealMem(true);
         pg.setPhysicalDir(idx);
+        // notify algorithm of insert
+        if (mAlgorithm) mAlgorithm->onInsert(pg.id, idx);
     }
 }
 
@@ -317,6 +362,14 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     }
     for (unsigned int idx : diskIdxs) {
         if (idx < mDisk.size()) diskDelIds.insert(mDisk[idx].id);
+    }
+
+    // Notify algorithm of evictions for RAM indices to be removed
+    for (unsigned int idx : ramIdxs) {
+        if (idx < mRam.size()) {
+            unsigned int pid = mRam[idx].id;
+            if (mAlgorithm) mAlgorithm->onEvict(pid, idx);
+        }
     }
 
     // Reconstruir RAM

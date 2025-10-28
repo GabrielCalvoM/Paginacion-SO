@@ -11,6 +11,9 @@ class SecondChance : public IAlgorithm {
 public:
     SecondChance(std::vector<Page>&);
     std::vector<unsigned int> execute(const std::vector<Page> &bufRAM, unsigned int pages) override;
+    void onInsert(unsigned int pageId, unsigned int frameIdx) override { (void)pageId; (void)frameIdx; }
+    void onAccess(unsigned int pageId) override { (void)pageId; }
+    void onEvict(unsigned int pageId, unsigned int frameIdx) override { (void)pageId; (void)frameIdx; }
 
 private:
     // Clock hand index into RAM
