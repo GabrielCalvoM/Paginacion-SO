@@ -45,7 +45,7 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     // LRU
     else if (type == AlgType::LRU) mAlgorithm = std::make_unique<Lru>(mRam);
     // Random
-    else if (type == AlgType::RND) mAlgorithm = std::make_unique<Random>(mRam, );
+    else if (type == AlgType::RND) mAlgorithm = std::make_unique<Random>(mRam, seed);
     // Fallback OPT
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 }
@@ -53,11 +53,7 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
 void MemoryManagementUnit::setProcCount(unsigned int n) {
     // clear previous procs
     reset();
-
-    for (int i = 0; i < n; ++i) {
-        Process& p = Process(i);
-        mProcessList
-    }
+    procCount = n;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
