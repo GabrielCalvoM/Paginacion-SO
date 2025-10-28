@@ -57,37 +57,7 @@ void MemoryManagementUnit::printState() const
         auto ptrs = process->getPointers();
         if (ptrs.empty()) {
             std::cout << " NULL \n" << std::endl;
-        std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
-
-        for (unsigned int idx : evictIndex) {
-            if (placedPages >= pages) break; // FINISH
-            if (idx >= mRam.size()) continue; // GUARD
-
-            // Notify algorithm that this page will be evicted
-            unsigned int evictedPageId = mRam[idx].id;
-            if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
-
-            // move evicted to disk
-            Page ev = mRam[idx];
-            ev.setInRealMem(false);
-            ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
-            mDisk.push_back(ev);
-
-            // move extra to frame
-            Page &frame = mRam[idx];
-            frame.setInRealMem(true);
-            frame.setPhysicalDir(idx);
-            
-            // Copy Mut Attributes
-            // const Page &src  = newPages[placedPages];
-
-            // Notify algorithm of insert of the new page occupying this frame
-            if (mAlgorithm) {
-                unsigned int newPageId = newPages[placedPages].id;
-                mAlgorithm->onInsert(newPageId, idx);
-            }
-
-            ++placedPages;
+            continue;
         }
         for (unsigned int ptrId : ptrs) {
             std::cout << " Ptr(" << ptrId << ") --> \n";
