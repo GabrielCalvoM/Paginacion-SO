@@ -27,6 +27,7 @@ private:
     unsigned int algTime = 0;
 
     unsigned int procCount = 0;
+    unsigned int procIdCount = 0;
     unsigned int ptrIdCount = 0;
     unsigned int pageIdCount = 0;
     

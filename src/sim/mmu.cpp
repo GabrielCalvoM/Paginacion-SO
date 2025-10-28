@@ -159,7 +159,7 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
 void MemoryManagementUnit::addTime(bool fault) {    
     if (fault) {
         algTime += 5;
-        thrashTime += 5;
+        trashTime += 5;
     } else {
         algTime += 1;
     }
@@ -234,7 +234,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     auto proc = mProcessList.find(pid);
     
     if (proc == mProcessList.end()) {
-        Process* p = new Process(procIdCount);
+        Process* p = new Process(++procIdCount);
         mProcessList[pid] = p;
         p->assignPtr(ptr.id);
     } else {
@@ -492,7 +492,7 @@ void MemoryManagementUnit::reset()
     mRam.reserve(ramSize / Page::pageSize);
 
     // reiniciar contador de id
-    procIdCount = 0;
+    procCount = 0;
     ptrIdCount = 0;
     pageIdCount = 0;
 
