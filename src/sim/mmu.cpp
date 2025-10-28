@@ -4,6 +4,7 @@
 #include <iostream>
 #include <new>
 #include <set>
+#include <mutex>
 
 #include "alg/optimal.h"
 #include "alg/fifo.h"
@@ -457,4 +458,26 @@ void MemoryManagementUnit::kill(unsigned int pid)
     }
 
     mProcessList.erase(it);
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// --- RESET SAFE ---
+void MemoryManagementUnit::reset()
+{
+    // bloquear para evitar carreras con otras operaciones que modifiquen el estado
+    std::lock_guard<std::mutex> lock(mStateMutex);
+
+    // vaciar tabla de símbolos y lista de procesos
+    mSimbolTable.clear();
+    mProcessList.clear();
+
+    // reconstruir mRam y mDisk mediante swap con vectores vacíos
+    std::vector<Page> emptyVec;
+    mRam.swap(emptyVec);
+    mDisk.swap(emptyVec);
+
+    // restaurar la capacidad reservada de RAM como en el constructor
+    mRam.reserve(ramSize / Page::pageSize);
+
+    // se puede meter un alg que mantenga estado interno 
 }
