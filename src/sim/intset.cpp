@@ -24,7 +24,8 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
     // vars
     std::vector<unsigned int> sequence;
     unsigned int nextPtrId = 1; // ocurrence of "new"
-    std::unordered_map<unsigned int, unsigned int> filetoPtr; // file-index -> ptrId
+    // map process id -> list of ptrIds owned by that process
+    std::unordered_map<unsigned int, std::vector<unsigned int>> fileToPtrs; // pid -> [ptrId]
     std::unordered_map<unsigned int, std::vector<unsigned int>> ptrToPages; // ptrId -> pageId
     unsigned int pageCounter = 1;
 
@@ -37,14 +38,16 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
             unsigned int pages = static_cast<unsigned int>(bytes / Page::pageSize);
             if (bytes % Page::pageSize) ++pages;
             unsigned int ptrId = nextPtrId++;
-            
+
             // assign sequential ids
             std::vector<unsigned int> pagesVec;
             pagesVec.reserve(pages);
             for (unsigned int p = 0; p < pages; ++p) pagesVec.push_back(pageCounter++);
-            
+
             // store mapping
             ptrToPages[ptrId] = pagesVec;
+            // record ownership (process -> ptrId)
+            fileToPtrs[pid].push_back(ptrId);
             break;
         }
 
@@ -64,16 +67,28 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
             // remove from struct
             unsigned int ptrRef = instr.param1;
             ptrToPages.erase(ptrRef);
+
+            // remove ownership references from any process vectors that contain this ptrRef
+            for (auto &kv : fileToPtrs) {
+                auto &vec = kv.second;
+                vec.erase(std::remove(vec.begin(), vec.end(), ptrRef), vec.end());
+            }
+
             break;
         }
 
         case killI: {
             // retrieve pid
             unsigned int pid = instr.param1;
-            
-            // delete owner
-            for (auto it : ptrToPages) {
-                // TODO
+
+            // delete all pointers owned by this process (if any)
+            auto it = fileToPtrs.find(pid);
+            if (it != fileToPtrs.end()) {
+                for (unsigned int ptrId : it->second) {
+                    ptrToPages.erase(ptrId);
+                }
+                // remove the record for this process
+                fileToPtrs.erase(it);
             }
             break;
         }
@@ -89,7 +104,12 @@ std::string IntSet::generateInstructions(unsigned int seed, unsigned int nProc, 
     if (nOp == 0 || nProc == 0) return buffer;
     emptyVec();
 
-    std::vector<process_t> processes(nProc, (process_t){true, {}});
+    // initialize processes vector: mark all processes as existing and empty pointer lists
+    std::vector<process_t> processes(nProc);
+    for (unsigned int pi = 0; pi < nProc; ++pi) {
+        processes[pi].exists = true;
+        processes[pi].pointers.clear();
+    }
     std::vector<bool> pointers;
 
     const IntTypeE instrList[] = {newI, useI, delI, killI};

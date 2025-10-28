@@ -453,6 +453,9 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     //remueve pointer from simbol table
     mSimbolTable.erase(it);
 
+    // count time for the delete instruction (no fault)
+    addTime(false);
+
     //NOTA: No se elimina el puntero de la lista de punteros del proceso propietario!!!!
     // OJOOOO
 }

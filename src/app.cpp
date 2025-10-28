@@ -152,7 +152,7 @@ InfoModel getInfo(Computer &sim) {
         sim.mmu.getLoadedPages(),
         sim.mmu.getUnloadedPages(),
 
-        // swap order
-        sim.mmu.getFragmentation(),
-        sim.mmu.getThrashTime()};
+    // provide values in the order expected by the UI (thrashing, fragmentation)
+    sim.mmu.getThrashTime(),
+    sim.mmu.getFragmentation()};
 }
