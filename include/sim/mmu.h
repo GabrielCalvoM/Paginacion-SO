@@ -51,7 +51,7 @@ public:
     const unsigned int getLoadedPages() const { return mRam.size(); }
     const unsigned int getUnloadedPages() const { return mDisk.size(); }
     const unsigned int getAlgTime() const { return algTime; }
-    const unsigned int getThrashTime() const { return trashTime; }
+    const unsigned int getThrashTime() const { return thrashTime; }
     const unsigned int getFragmentation() const {
         unsigned int space = 0;
         for (const auto p : mRam) {

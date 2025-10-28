@@ -135,7 +135,7 @@ InfoModel getInfo(Computer &sim) {
         sim.mmu.getDiskSize(),
         sim.mmu.getLoadedPages(),
         sim.mmu.getUnloadedPages(),
-        sim.mmu.getThrahsTime(),
+        sim.mmu.getThrashTime(),
         sim.mmu.getFragmentation()};
 
 }
