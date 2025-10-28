@@ -48,7 +48,6 @@ public:
 
     // --- Setters ---
     void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={});
-    void reset();
     
     // --- Debug ---
     void printState() const;

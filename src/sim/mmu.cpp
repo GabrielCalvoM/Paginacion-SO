@@ -47,14 +47,6 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 }
 
-void MemoryManagementUnit::reset() {
-    for (auto pid : mProcessList) { delete mProcessList[pid.first]; }
-    mProcessList.clear();
-    mSimbolTable.clear();
-    mRam.clear();
-    mDisk.clear();
-}
-
 // --- DEBUG ---
 void MemoryManagementUnit::printState() const
 {
@@ -476,13 +468,15 @@ void MemoryManagementUnit::reset()
     std::lock_guard<std::mutex> lock(mStateMutex);
 
     // vaciar tabla de símbolos y lista de procesos
+    for (auto pid : mProcessList) { delete mProcessList[pid.first]; }
     mSimbolTable.clear();
     mProcessList.clear();
 
     // reconstruir mRam y mDisk mediante swap con vectores vacíos
-    std::vector<Page> emptyVec;
-    mRam.swap(emptyVec);
-    mDisk.swap(emptyVec);
+    std::vector<Page> emptyVec1;
+    std::vector<Page> emptyVec2;
+    mRam.swap(emptyVec1);
+    mDisk.swap(emptyVec2);
 
     // restaurar la capacidad reservada de RAM como en el constructor
     mRam.reserve(ramSize / Page::pageSize);
