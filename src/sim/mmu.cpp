@@ -261,20 +261,20 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 
         // si ya esta en RAM -> mark access for algorithms that need it
         if (pg.isInRealMem()) { 
-            // mark second chance bit
-            pg.setSecondChance(true);
-            if (mAlgorithm) mAlgorithm->onAccess(pg.id);
-            continue; 
+        // mark second chance bit
+        pg.setSecondChance(true);
+        if (mAlgorithm) mAlgorithm->onAccess(pg.id);
+        continue; 
         }
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < mRam.capacity()) {
-            pg.setInRealMem(true);
-            pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-            mRam.push_back(pg); // copia actualizada a RAM
-            // notify algorithm of insert
-            if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
-            continue;
+        pg.setInRealMem(true);
+        pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+        mRam.push_back(pg); // copia actualizada a RAM
+        // notify algorithm of insert
+        if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
+        continue;
         }
 
         //no hay espacio -> pedir al algoritmo indices a desalojar 
@@ -282,18 +282,18 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         if (evictIdx.empty()) continue; // guard
         else { fault = 1; }
 
-    unsigned int idx = evictIdx[0];
+        unsigned int idx = evictIdx[0];
         if (idx >= mRam.size()) continue; // guard
 
-    // Notify algorithm of eviction
-    unsigned int evictedPageId = mRam[idx].id;
-    if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
+        // Notify algorithm of eviction
+        unsigned int evictedPageId = mRam[idx].id;
+        if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
 
-    //mover la página evictada a DISCO
-    Page ev = mRam[idx];
-    ev.setInRealMem(false);
-    ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
-    mDisk.push_back(ev);
+        //mover la página evictada a DISCO
+        Page ev = mRam[idx];
+        ev.setInRealMem(false);
+        ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+        mDisk.push_back(ev);
         //colocar la página solicitada en el frame liberado
         Page &frame = mRam[idx];
         //reconstruye la pagina in-place
