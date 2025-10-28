@@ -22,7 +22,8 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         mcv.wait(lock, [this]{ return mIsRunning.load(); });
         lock.unlock();
 
-        mComputer.mmu.printState();
+        mOptSimulation.mmu.printState();
+        mAlgSimulation.mmu.printState();
 
         Computer::setPaused(false);
     });
