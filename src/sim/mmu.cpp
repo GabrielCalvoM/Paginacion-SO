@@ -9,6 +9,8 @@
 #include "alg/fifo.h"
 #include "alg/second_chance.h"
 #include "alg/lru.h"
+#include "alg/mru.h"
+#include "alg/random.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- CPP IMPLEMENTATION ---
@@ -190,7 +192,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     // Fill Extra in DISK FAULT
     if (placedPages < pages) {
         // FAULT
-        fault = 1
+        fault = 1;
 
         unsigned int remaining = pages - placedPages;
         std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
