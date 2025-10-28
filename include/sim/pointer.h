@@ -23,7 +23,7 @@ public:
 
 
     // --- Setters ---
-    void assignPages(int num);
+    void assignPages(int num, int size);
     // void setOwner(unsigned int num)
     
 };
