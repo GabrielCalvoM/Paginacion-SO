@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "sim/intset.h"
 #include "sim/page.h"
@@ -65,6 +66,12 @@ public:
     void delPtr(unsigned int ptrId);
     void kill(unsigned int pid);
 
+    // --- reset ---
+    void reset();
+
+private:
+    // --- mutex aux ---
+    std::mutex mStateMutex;
     
 };
 
