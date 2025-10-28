@@ -1,6 +1,6 @@
 #include "sim/mmu.h"
 
-#include <algorithm>
+#include "algorithm.h"
 #include <iostream>
 #include <new>
 #include <set>
@@ -36,6 +36,8 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else if (type == AlgType::FIFO) mAlgorithm = std::make_unique<Fifo>(mRam);
     // second chance
     else if (type == AlgType::SC) mAlgorithm = std::make_unique<SecondChance>(mRam);
+    // MRU
+    else if (type == AlgType::MRU) mAlgorithm = std::make_unique<Mru>(mRam);
     // LRU
     else if (type == AlgType::LRU) mAlgorithm = std::make_unique<Lru>(mRam);
     // Fallback OPT
@@ -136,18 +138,39 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
     }
 }
 
+// AUX ADD TIME
+void addTime(bool fault) {
+    if (mAlgorithm->type == AlgType.OPT) {
+        if (fault) {
+            optTime += 5;
+        } else {
+            optTime += 1;
+        }
+    } else {
+        if (fault) {
+            algTime += 5;
+        } else {
+            algTime += 1;
+        }
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- PROC METHOD: NEW PTR ---
 unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size) 
 {
+    // BOOL FAULT
+    bool fault = 0;
+
     // Compute Pages
     unsigned int pages = size / Page::pageSize;
     if (size % Page::pageSize != 0) ++pages;
 
     // Create Pointer and assign Pages
     Pointer ptr;
-    ptr.assignPages(static_cast<int>(pages));
+    ptr.assignPages(static_cast<int>(pages), size);
     std::vector<Page> &newPages = ptr.getPages();
+
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
@@ -164,8 +187,11 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         ++placedPages;
     }
 
-    // Fill Extra in DISK
+    // Fill Extra in DISK FAULT
     if (placedPages < pages) {
+        // FAULT
+        fault = 1
+
         unsigned int remaining = pages - placedPages;
         std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
 
@@ -205,6 +231,8 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         proc->second->assignPtr(ptr.id);
     }
 
+
+    addTime(fault);
     return ptr.id;
 }
 
@@ -212,6 +240,9 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 // --- PROC METHOD: USE PTR ---
 void MemoryManagementUnit::usePtr(unsigned int ptrId)
 {
+    // BOOL FAULT
+    bool fault = 0;
+
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) return;
 
@@ -243,6 +274,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         //no hay espacio -> pedir al algoritmo indices a desalojar 
         std::vector<unsigned int> evictIdx = mAlgorithm->execute(mRam, 1);
         if (evictIdx.empty()) continue; // guard
+        else { fault = 1; }
 
     unsigned int idx = evictIdx[0];
         if (idx >= mRam.size()) continue; // guard
@@ -271,6 +303,8 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         // notify algorithm of insert
         if (mAlgorithm) mAlgorithm->onInsert(pg.id, idx);
     }
+
+    addTime(fault);
 }
 
 

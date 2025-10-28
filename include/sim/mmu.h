@@ -22,6 +22,9 @@ private:
     std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
+    unsigned int optTime = 0;
+    unsigned int algTime = 0;
+    
 public:
     static const unsigned int ramSize = Consts::MAX_RAM; // 400 KB
 

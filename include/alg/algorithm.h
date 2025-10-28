@@ -27,10 +27,12 @@ typedef enum class AlgType {
 class IAlgorithm {
 protected:
     std::vector<Page> &mRam;
+    
 
 public:
     IAlgorithm(std::vector<Page>&);
     virtual ~IAlgorithm() = default;
+    AlgType type;
 
     // Execute the algorithm to free 'pages' frames.
     // Returns a list of indices in mRam that should be evicted (ordered by eviction preference).

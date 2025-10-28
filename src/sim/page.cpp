@@ -4,7 +4,7 @@
 unsigned int Page::mIdCount = 0;
 
 // Constructor
-Page::Page() : id(++mIdCount) {}
+Page::Page(int space) : id(++mIdCount), space(space) { }
 
 // --- Getters ---
 unsigned int Page::getPhysicalDir() const { return mPhysicalDir; }
@@ -16,5 +16,7 @@ bool Page::hasSecondChance() const { return mSecondChance; }
 void Page::setPhysicalDir(unsigned int dir) { mPhysicalDir = dir; }
 void Page::setInRealMem(bool value) { mInRealMem = value; }
 void Page::setSecondChance(bool value) { mSecondChance = value; }
+void Page::setSpace(int value) { space = value; }
+
 //void Page::incLastAccess() { mLastAccess += 1; }
 //void Page::resetLastAccess() { mLastAccess = 0; }
