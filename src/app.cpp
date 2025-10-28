@@ -128,6 +128,14 @@ std::vector<MMUModel> getMMU(Computer &sim) {
 }
 
 InfoModel getInfo(Computer &sim) {
-    return {sim.mmu.getProcesses(), 0, sim.mmu.getRamSize(), sim.mmu.getDiskSize(), sim.mmu.getLoadedPages(), sim.mmu.getUnloadedPages(), 0, 0};
+    return {
+        sim.mmu.getProcesses(), 
+        sim.mmu.getAlgTime(),
+        sim.mmu.getRamSize(),
+        sim.mmu.getDiskSize(),
+        sim.mmu.getLoadedPages(),
+        sim.mmu.getUnloadedPages(),
+        sim.mmu.getThrahsTime(),
+        sim.mmu.getFragmentation()};
 
 }

@@ -23,7 +23,7 @@ private:
     std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
-    unsigned int trashTime = 0;
+    unsigned int thrashTime = 0;
     unsigned int algTime = 0;
 
     unsigned int procCount = 0;
@@ -51,7 +51,14 @@ public:
     const unsigned int getLoadedPages() const { return mRam.size(); }
     const unsigned int getUnloadedPages() const { return mDisk.size(); }
     const unsigned int getAlgTime() const { return algTime; }
-    const unsigned int getTrashTime() const { return trashTime; }
+    const unsigned int getThrashTime() const { return trashTime; }
+    const unsigned int getFragmentation() const {
+        unsigned int space = 0;
+        for (const auto p : mRam) {
+            space += p.getSpace();
+        }
+        return ramSize - space;
+    }
 
 
     // --- Setters ---

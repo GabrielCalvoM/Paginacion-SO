@@ -155,7 +155,7 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
 void MemoryManagementUnit::addTime(bool fault) {    
     if (fault) {
         algTime += 5;
-        trashTime += 5;
+        thrashTime += 5;
     } else {
         algTime += 1;
     }

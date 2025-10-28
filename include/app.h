@@ -18,8 +18,8 @@ private:
     std::thread mOptThread;
     std::thread mAlgThread;
 
-    Computer mOptSimulation = Computer(mcv, mmtx);
-    Computer mAlgSimulation = Computer(mcv, mmtx);
+    Computer mOptSimulation = Computer(mcv, mmtx); // MMU 1
+    Computer mAlgSimulation = Computer(mcv, mmtx); // MMU 2
     
     GtkPaginacion mWindow;
 
