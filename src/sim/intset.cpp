@@ -29,7 +29,7 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
     unsigned int pageCounter = 1;
 
     //
-    for (const auto &instr : mInstructions) { switch (instr.type) {
+    for (const auto &instr : mVec) { switch (instr.type) {
         case newI: {
             // define pages
             unsigned int pid = instr.param1;    
@@ -73,7 +73,7 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
             
             // delete owner
             for (auto it : ptrToPages) {
-                if ()
+                // TODO
             }
             break;
         }
