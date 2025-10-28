@@ -7,6 +7,7 @@
 
 #include "alg/algorithm.h"
 #include "sim/intset.h"
+#include "sim/page.h"
 
 namespace {
     typedef struct {
@@ -18,11 +19,70 @@ namespace {
 static inline void insertInstruction(IntSet *set, std::string &buffer, IntTypeE instruction, unsigned int param);
 static inline void insertInstruction(IntSet *set, std::string &buffer, IntTypeE instruction, unsigned int param1, unsigned int param2);
 
+////////////////////////////////////////////////////////////////////////////////////////////
 const std::vector<unsigned int> IntSet::getAccessSequence() const {
-    std::vector<unsigned int> vec;
-    return vec;
-}
+    // vars
+    std::vector<unsigned int> sequence;
+    unsigned int nextPtrId = 1; // ocurrence of "new"
+    std::unordered_map<unsigned int, unsigned int> filetoPtr; // file-index -> ptrId
+    std::unordered_map<unsigned int, std::vector<unsigned int>> ptrToPages; // ptrId -> pageId
+    unsigned int pageCounter = 1;
 
+    //
+    for (const auto &instr : mInstructions) { switch (instr.type) {
+        case newI: {
+            // define pages
+            unsigned int pid = instr.param1;    
+            size_t bytes = instr.param2;        
+            unsigned int pages = static_cast<unsigned int>(bytes / Page::pageSize);
+            if (bytes % Page::pageSize) ++pages;
+            unsigned int ptrId = nextPtrId++;
+            
+            // assign sequential ids
+            std::vector<unsigned int> pagesVec;
+            pagesVec.reserve(pages);
+            for (unsigned int p = 0; p < pages; ++p) pagesVec.push_back(pageCounter++);
+            
+            // store mapping
+            ptrToPages[ptrId] = pagesVec;
+            break;
+        }
+
+        case useI: {
+            // retrieve ptr
+            unsigned int ptrRef = instr.param1;
+            auto it = ptrToPages.find(ptrRef);
+
+            // add to sequence
+            if (it != ptrToPages.end()) {
+                sequence.insert(sequence.end(), it->second.begin(), it->second.end());
+            }
+            break;
+        }
+
+        case delI: {
+            // remove from struct
+            unsigned int ptrRef = instr.param1;
+            ptrToPages.erase(ptrRef);
+            break;
+        }
+
+        case killI: {
+            // retrieve pid
+            unsigned int pid = instr.param1;
+            
+            // delete owner
+            for (auto it : ptrToPages) {
+                if ()
+            }
+            break;
+        }
+
+    }}
+
+    return sequence;
+}
+////////////////////////////////////////////////////////////////////////////////////////////
 std::string IntSet::generateInstructions(unsigned int seed, unsigned int nProc, unsigned int nOp) {
     std::string buffer;
 

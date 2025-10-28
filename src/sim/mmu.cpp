@@ -196,6 +196,9 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
 
         ++placedPages;
+
+        // consume Time
+        addTime(false);
     }
 
     // Fill Extra in DISK FAULT
@@ -261,9 +264,6 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     for (unsigned int i = 0; i < pages.size(); ++i) {
         Page &pg = pages[i];
 
-        // ver el futuro si OPT
-        if (mAlgorithm) mAlgorithm->optForesee(pg.id);
-
         // si ya esta en RAM -> mark access for algorithms that need it
         if (pg.isInRealMem()) { 
             // mark second chance bit
@@ -282,7 +282,13 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
             continue;
         }
 
-        //no hay espacio -> pedir al algoritmo indices a desalojar 
+        // signals
+        if (mAlgorithm) {
+            mAlgorithm->onAccess(pg.id);   // notificar
+            mAlgorithm->optForesee(pg.id); // consumir ocurrencia
+        }
+
+        //no hay espacio -> pedir al algoritmo indices a desalojar
         std::vector<unsigned int> evictIdx = mAlgorithm->execute(mRam, 1);
         if (evictIdx.empty()) continue; // guard
         else { fault = 1; }
@@ -313,6 +319,8 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         pg.setPhysicalDir(idx);
         // notify algorithm of insert
         if (mAlgorithm) mAlgorithm->onInsert(pg.id, idx);
+
+        
     }
 
     addTime(fault);

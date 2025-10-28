@@ -52,12 +52,18 @@ public:
     const unsigned int getUnloadedPages() const { return mDisk.size(); }
     const unsigned int getAlgTime() const { return algTime; }
     const unsigned int getThrashTime() const { return thrashTime; }
+
     const unsigned int getFragmentation() const {
-        unsigned int space = 0;
-        for (const auto p : mRam) {
-            space += p.getSpace();
-        }
-        return ramSize - space;
+        // track storage
+        size_t totalPages = mRam.size() + mDisk.size();
+        size_t totalBytes = totalPages * Page::pageSize;
+
+        // calculate usage
+        size_t usedBytes = getRamSize() + getDiskSize();
+        size_t freeBytes = totalBytes - usedBytes;
+
+        // percentage
+        return static_cast<unsigned int>((freeBytes * 100) / totalBytes);
     }
 
 

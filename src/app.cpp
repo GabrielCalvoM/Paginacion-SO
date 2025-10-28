@@ -31,7 +31,9 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         mcv.wait(lock, [this]{ return mIsRunning.load(); });
         lock.unlock();
 
+        printf("\t[OPT SIM]\n");
         mOptSimulation.mmu.printState();
+        printf("\t[ALG SIM]\n");
         mAlgSimulation.mmu.printState();
 
         Computer::setPaused(false);
@@ -149,7 +151,8 @@ InfoModel getInfo(Computer &sim) {
         sim.mmu.getDiskSize(),
         sim.mmu.getLoadedPages(),
         sim.mmu.getUnloadedPages(),
-        sim.mmu.getThrashTime(),
-        sim.mmu.getFragmentation()};
 
+        // swap order
+        sim.mmu.getFragmentation(),
+        sim.mmu.getThrashTime()};
 }
