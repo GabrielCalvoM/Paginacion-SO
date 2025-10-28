@@ -80,6 +80,8 @@
       <column type="guint"/>
       <!-- column-name LoadedPages -->
       <column type="guint"/>
+      <!-- column-name UnloadedPages -->
+      <column type="guint"/>
       <!-- column-name Thrashing -->
       <column type="guint"/>
       <!-- column-name Fragmentation -->
@@ -94,6 +96,7 @@
         <col id="4">0</col>
         <col id="5">0</col>
         <col id="6">0</col>
+        <col id="7">0</col>
       </row>
     </data>
   </object>
@@ -109,6 +112,8 @@
       <column type="guint"/>
       <!-- column-name LoadedPages -->
       <column type="guint"/>
+      <!-- column-name UnloadedPages -->
+      <column type="guint"/>
       <!-- column-name Thrashing -->
       <column type="guint"/>
       <!-- column-name Fragmentation -->
@@ -123,6 +128,7 @@
         <col id="4">0</col>
         <col id="5">0</col>
         <col id="6">0</col>
+        <col id="7">0</col>
       </row>
     </data>
   </object>
@@ -143,6 +149,8 @@
       <column type="guint"/>
       <!-- column-name LoadedT -->
       <column type="guint"/>
+      <!-- column-name Mark -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkListStore" id="MmuOptModel">
@@ -161,6 +169,8 @@
       <column type="guint"/>
       <!-- column-name LoadedT -->
       <column type="guint"/>
+      <!-- column-name Mark -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkFileChooserDialog" id="OpenFile">
@@ -533,6 +543,7 @@
                         <property name="can-focus">False</property>
                         <property name="margin-start">38</property>
                         <property name="model">AlgorithmComboModel</property>
+                        <property name="active">0</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                           <attributes>
@@ -694,7 +705,8 @@
                             <property name="can-focus">True</property>
                             <property name="margin-start">32</property>
                             <property name="adjustment">adjustment4</property>
-                            <property name="round-digits">1</property>
+                            <property name="round-digits">0</property>
+                            <property name="digits">0</property>
                             <property name="value-pos">right</property>
                           </object>
                           <packing>
@@ -718,7 +730,6 @@
                         <property name="layout-style">start</property>
                         <child>
                           <object class="GtkButton" id="ResetButton">
-                            <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                             <child>
@@ -758,7 +769,6 @@
                         </child>
                         <child>
                           <object class="GtkToggleButton" id="PauseButton">
-                            <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                             <property name="always-show-image">True</property>
@@ -1041,10 +1051,18 @@
                           <object class="GtkTreeView" id="ProcessTimeOptView">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="halign">start</property>
                             <property name="model">InfoOptModel</property>
+                            <property name="headers-clickable">False</property>
                             <property name="enable-grid-lines">both</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection">
+                                <property name="mode">none</property>
+                              </object>
+                            </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">Procesos</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1076,7 +1094,9 @@
                           <object class="GtkTreeView" id="RamInfoOptView">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="halign">start</property>
                             <property name="model">InfoOptModel</property>
+                            <property name="headers-clickable">False</property>
                             <property name="enable-grid-lines">both</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection">
@@ -1085,6 +1105,7 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">RAM KB</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1096,6 +1117,7 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">RAM %</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1107,17 +1129,25 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">V-RAM KB</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">3</attribute>
+                                  </attributes>
                                 </child>
                               </object>
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">V-RAM %</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">3</attribute>
+                                  </attributes>
                                 </child>
                               </object>
                             </child>
@@ -1161,6 +1191,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoOptModel</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1169,6 +1200,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">Cargadas</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
@@ -1180,11 +1212,12 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">No Cargadas</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">4</attribute>
+                                        <attribute name="text">5</attribute>
                                       </attributes>
                                     </child>
                                   </object>
@@ -1200,6 +1233,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoOptModel</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1208,23 +1242,24 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">Segundos</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">5</attribute>
+                                        <attribute name="text">6</attribute>
                                       </attributes>
                                     </child>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
-                                    <property name="min-width">60</property>
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">%</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">5</attribute>
+                                        <attribute name="text">6</attribute>
                                       </attributes>
                                     </child>
                                   </object>
@@ -1240,6 +1275,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoOptModel</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1251,7 +1287,7 @@
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">6</attribute>
+                                        <attribute name="text">7</attribute>
                                       </attributes>
                                     </child>
                                   </object>
@@ -1422,14 +1458,18 @@
                           <object class="GtkTreeView" id="ProcessTimeAlgView">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="halign">start</property>
                             <property name="model">InfoAlgModel</property>
-                            <property name="search-column">0</property>
+                            <property name="headers-clickable">False</property>
                             <property name="enable-grid-lines">both</property>
                             <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
+                              <object class="GtkTreeSelection">
+                                <property name="mode">none</property>
+                              </object>
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">Procesos</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1461,8 +1501,9 @@
                           <object class="GtkTreeView" id="RamInfoAlgView">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="halign">start</property>
                             <property name="model">InfoAlgModel</property>
-                            <property name="search-column">0</property>
+                            <property name="headers-clickable">False</property>
                             <property name="enable-grid-lines">both</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection">
@@ -1471,6 +1512,7 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">RAM KB</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1482,6 +1524,7 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">RAM %</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
@@ -1493,17 +1536,25 @@
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">V-RAM KB</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">3</attribute>
+                                  </attributes>
                                 </child>
                               </object>
                             </child>
                             <child>
                               <object class="GtkTreeViewColumn">
+                                <property name="min-width">80</property>
                                 <property name="title" translatable="yes">V-RAM %</property>
                                 <child>
                                   <object class="GtkCellRendererText"/>
+                                  <attributes>
+                                    <attribute name="text">3</attribute>
+                                  </attributes>
                                 </child>
                               </object>
                             </child>
@@ -1547,7 +1598,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoAlgModel</property>
-                                <property name="search-column">0</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1556,6 +1607,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">Cargadas</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
@@ -1567,11 +1619,12 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">No Cargadas</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">4</attribute>
+                                        <attribute name="text">5</attribute>
                                       </attributes>
                                     </child>
                                   </object>
@@ -1587,7 +1640,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoAlgModel</property>
-                                <property name="search-column">0</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1596,23 +1649,24 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">Segundos</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">5</attribute>
+                                        <attribute name="text">6</attribute>
                                       </attributes>
                                     </child>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
-                                    <property name="min-width">60</property>
+                                    <property name="min-width">80</property>
                                     <property name="title" translatable="yes">%</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">5</attribute>
+                                        <attribute name="text">6</attribute>
                                       </attributes>
                                     </child>
                                   </object>
@@ -1628,7 +1682,7 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="model">InfoAlgModel</property>
-                                <property name="search-column">0</property>
+                                <property name="headers-clickable">False</property>
                                 <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection">
@@ -1637,10 +1691,11 @@
                                 </child>
                                 <child>
                                   <object class="GtkTreeViewColumn">
+                                    <property name="min-width">80</property>
                                     <child>
                                       <object class="GtkCellRendererText"/>
                                       <attributes>
-                                        <attribute name="text">6</attribute>
+                                        <attribute name="text">7</attribute>
                                       </attributes>
                                     </child>
                                   </object>

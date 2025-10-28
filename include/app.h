@@ -1,6 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 
@@ -18,6 +19,16 @@ private:
     GtkPaginacion mWindow;
 
     IntSet mInstructions;
+
+    std::atomic<bool> mIsRunning = false;
+    std::atomic<bool> mResetRequest = false;
+    std::atomic<unsigned int> mWaitCount = 0;
+    std::atomic<unsigned int> mFinishedCount = 0;
+
+    void runSimulation();
+    void runComputer(Computer &sim);
+    void resetSimulation();
+    void resetComputer(Computer &sim);
 
 public:
     Application(int argc, char *argv[]);

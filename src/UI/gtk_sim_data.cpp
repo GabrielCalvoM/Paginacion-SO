@@ -5,7 +5,7 @@
 namespace {
     class ModelColumns : public Gtk::TreeModel::ColumnRecord {
     public:
-        Gtk::TreeModelColumn<guint> value;
+        Gtk::TreeModelColumn<gint> value;
         Gtk::TreeModelColumn<Glib::ustring> name;
         ModelColumns() { add(value); add(name); }
 
@@ -22,24 +22,27 @@ GtkSimData::~GtkSimData() {}
 
 
 // --- Getters ---
-unsigned int GtkSimData::getSeed() {
+unsigned int GtkSimData::getSeed() const {
     return (unsigned int) mRandomSeed->get_value_as_int();
 }
 
-AlgTypeE GtkSimData::getAlgorithm(){
+AlgTypeE GtkSimData::getAlgorithm() const{
     Gtk::TreeModel::Row row = *mAlgorithm->get_active();
     ModelColumns columns;
     return static_cast<AlgTypeE>(row.get_value(columns.value));
 }
 
-unsigned int GtkSimData::getNProcesses() {
+unsigned int GtkSimData::getNProcesses() const {
     return (unsigned int) mNProcesses->get_value_as_int();
 }
 
-unsigned int GtkSimData::getNOperations() {
+unsigned int GtkSimData::getNOperations() const {
     return (unsigned int) mNOperations->get_value_as_int();
 }
 
+void GtkSimData::algorithmConnect(std::function<void(AlgTypeE)> func) const {
+    mAlgorithm->signal_changed().connect([=]() { func(getAlgorithm()); });
+}
 
 void GtkSimData::initialize() {
     mBuilder->get_widget("SeedEntry", mRandomSeed);

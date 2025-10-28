@@ -22,6 +22,7 @@ public:
 
     // --- Getters ---
     unsigned int getPhysicalDir() const;
+    int getSpace() const;
     bool isInRealMem() const;
     bool hasSecondChance() const;
 

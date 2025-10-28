@@ -46,6 +46,14 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
 }
 
+void MemoryManagementUnit::reset() {
+    for (auto pid : mProcessList) { delete mProcessList[pid.first]; }
+    mProcessList.clear();
+    mSimbolTable.clear();
+    mRam.clear();
+    mDisk.clear();
+}
+
 // --- DEBUG ---
 void MemoryManagementUnit::printState() const
 {

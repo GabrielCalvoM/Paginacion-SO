@@ -32,10 +32,22 @@ public:
     ~MemoryManagementUnit();
 
     // --- Getters ---
+    const std::vector<Page> &ram() const { return mRam; }
+    const unsigned int getProcesses() const { return mProcessList.size(); }
+    const unsigned int getRamSize() const {
+        int size = 0; for (const auto p : mRam) size += p.getSpace();
+        return size;
+    }
+    const unsigned int getDiskSize() const {
+        int size = 0; for (const auto p : mDisk) size += p.getSpace();
+        return size;
+    }
+    const unsigned int getLoadedPages() const { return mRam.size(); }
+    const unsigned int getUnloadedPages() const { return mDisk.size(); }
 
     // --- Setters ---
     void initAlgorithm(AlgType type, const std::vector<unsigned int> &accessSequence={});
-    
+    void reset();
     
     // --- Debug ---
     void printState() const;

@@ -8,6 +8,7 @@ Page::Page(int space) : id(++mIdCount), space(space) { }
 
 // --- Getters ---
 unsigned int Page::getPhysicalDir() const { return mPhysicalDir; }
+int Page::getSpace() const { return space; }
 bool Page::isInRealMem() const { return mInRealMem; }
 bool Page::hasSecondChance() const { return mSecondChance; }
 //bool Page::getLastAccess() const { return mLastAccess; }

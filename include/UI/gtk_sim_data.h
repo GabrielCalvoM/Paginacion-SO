@@ -21,10 +21,12 @@ public:
     ~GtkSimData();
 
     // --- Getters ---
-    unsigned int getSeed();
-    AlgTypeE getAlgorithm();
-    unsigned int getNProcesses();
-    unsigned int getNOperations();
+    unsigned int getSeed() const;
+    AlgTypeE getAlgorithm() const;
+    unsigned int getNProcesses() const;
+    unsigned int getNOperations() const;
+
+    void algorithmConnect(std::function<void(AlgTypeE)> func) const;
 
     void setBuilder(Glib::RefPtr<Gtk::Builder> builder) { mBuilder = builder; }
 
