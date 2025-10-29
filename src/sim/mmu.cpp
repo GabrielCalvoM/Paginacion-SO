@@ -172,22 +172,24 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 {
     // BOOL FAULT
     bool fault = 0;
+    Page* pg = NULL;
 
     // Compute Pages
     unsigned int pages = size / Page::pageSize;
     if (size % Page::pageSize != 0) ++pages;
 
+    printf("\n [EXE: new] - Size %zu -> Pages: %u \n", size, pages);
+
     // Create Pointer and assign Pages
     Pointer ptr(ptrIdCount);
     ptr.assignPages(static_cast<int>(pages), size, pageIdCount);
     std::vector<Page> &newPages = ptr.getPages();
-    for (auto p : newPages) mPageMap.emplace(p.id, ptr.id);
+
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
-    while (placedPages < pages && mRam.size() < 100) {
-        
-        Page &pg = newPages[placedPages];
+    while (placedPages < pages && mRam.size() < 100) {    
+        pg = &newPages[placedPages];
         pg.setInRealMem(true);
         pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
         mRam.push_back(pg);
@@ -198,16 +200,20 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         ++placedPages;
 
         // consume Time
-        addTime(false);
+        printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n", 
+                pg.id, placedPages, pages, pg.getPhysicalDir());
+        addTime(false); 
     }
 
     // Fill Extra in DISK FAULT
     if (placedPages < pages) {
         // FAULT
         fault = 1;
-
         unsigned int remaining = pages - placedPages;
-        std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
+        printf("\n [EXE: new] - Not enough RAM space for %u pages \n", remaining);
+        printf("\n [EXE: new] - Calling Algorithm \n");
+
+        std::vector<unsigned int> evicted = mAlgorithm->execute(mRam, remaining);
 
         for (unsigned int idx : evictIndex) {
             if (placedPages >= pages) break; // FINISH
@@ -219,33 +225,35 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
             mDisk.push_back(ev);
 
+            printf("\n [EXE: new] - Moving page to DISK %u (%u/%u) at %u\n", 
+                pg.id, remaining--, evicted.size(), pg.getPhysicalDir());
+
             // move extra to frame
-            Page &frame = mRam[idx];
-            frame.setInRealMem(true);
-            frame.setPhysicalDir(idx);
+            pg = &mRam[idx];
+            pg.setInRealMem(true);
+            pg.setPhysicalDir(idx);
             
-            // Copy Mut Attributes
-            const Page &src  = newPages[placedPages];
-
             ++placedPages;
-        }
 
+            printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n", 
+                pg.id, placedPages, pages, pg.getPhysicalDir());
+        }
     }
 
     // Store Pointer Data (Table + Owner)
     mSimbolTable.emplace(ptr.id, ptr);
-    mPtrMap.emplace(ptr.id, pid);
 
     auto proc = mProcessList.find(pid);
     
-    if (proc == mProcessList.end()) {
-        Process* p = new Process(++procIdCount);
-        mProcessList[pid] = p;
-        p->assignPtr(ptr.id);
-    } else {
+    // if (proc == mProcessList.end()) {
+    //     Process* p = new Process(++procIdCount);
+    //     mProcessList[pid] = p;
+    //     p->assignPtr(ptr.id);
+    // } else {
         proc->second->assignPtr(ptr.id);
-    }
+    // }
 
+    printf("\n [EXE: new] - Finish new instruction \n");
 
     addTime(fault);
     return ptr.id;
@@ -257,13 +265,15 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 {
     // BOOL FAULT
     bool fault = 0;
+    Page &pg = NULL;
+    printf("\n [EXE: use] - Ptr %u \n", ptrId);
 
     auto it = mSimbolTable.find(ptrId);
-    if (it == mSimbolTable.end()) return;
+    if (it == mSimbolTable.end()) { printf("\n [EXE: use] - Early return \n"); return; }
 
     std::vector<Page> &pages = it->second.getPages();
     for (unsigned int i = 0; i < pages.size(); ++i) {
-        Page &pg = pages[i];
+        pg = pages[i];
 
         // si ya esta en RAM -> mark access for algorithms that need it
         if (pg.isInRealMem()) { 
@@ -274,7 +284,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         }
 
         //si hay espacio libre en RAM, colocar al final
-        if (mRam.size() < 100) {
+        if (mRam.size() < mRam.capacity()) {
             pg.setInRealMem(true);
             pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
             mRam.push_back(pg); // copia actualizada a RAM
@@ -454,6 +464,9 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     //remueve pointer from simbol table
     mSimbolTable.erase(it);
 
+    // count time for the delete instruction (no fault)
+    addTime(false);
+
     //NOTA: No se elimina el puntero de la lista de punteros del proceso propietario!!!!
     // OJOOOO
 }
@@ -501,13 +514,8 @@ void MemoryManagementUnit::reset()
     // restaurar la capacidad reservada de RAM como en el constructor
     mRam.reserve(ramSize / Page::pageSize);
 
-    // reiniciar tiempos
-    thrashTime = 0;
-    algTime = 0;
-
     // reiniciar contador de id
     procCount = 0;
-    procIdCount = 0;
     ptrIdCount = 0;
     pageIdCount = 0;
 
