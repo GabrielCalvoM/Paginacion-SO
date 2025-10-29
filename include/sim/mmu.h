@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <unordered_map>
+#include <set>
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -19,6 +20,11 @@ class MemoryManagementUnit {
 private:
     std::unordered_map<unsigned int, Process*> mProcessList;
     std::unordered_map<unsigned int, Pointer> mSimbolTable;
+    std::unordered_map<unsigned int, unsigned int> mPageMap;
+    std::unordered_map<unsigned int, unsigned int> mPtrMap;
+    std::set<unsigned int> mRamAddresses;
+    std::set<unsigned int> mDiskAddresses;
+    std::vector<Page> mPageLoadedTime;
     std::vector<Page> mRam;
     std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
@@ -39,6 +45,8 @@ public:
 
     // --- Getters ---
     const std::vector<Page> &ram() const { return mRam; }
+    const std::vector<Page> &disk() const { return mDisk; }
+    const unsigned int getPageId(unsigned int id) const { return mPtrMap.at(mPageMap.at(id)); }
     const unsigned int getProcesses() const { return mProcessList.size(); }
     const unsigned int getRamSize() const {
         int size = 0; for (const auto p : mRam) size += p.getSpace();

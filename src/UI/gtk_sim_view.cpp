@@ -117,8 +117,10 @@ void GtkSimView::initialize() {
                 std::to_string(row[MMUColumns::columns.dAddr]) : ""; });
         setRendererText(tree->get_column(6), [=](Gtk::TreeRow &row)
             { return row[MMUColumns::columns.mAddr] > 0 ?
-                std::to_string(row[MMUColumns::columns.loadedTime]) : ""; });
+                std::to_string(row[MMUColumns::columns.loadedTime]) + "s" : ""; });
         setRendererText(tree->get_column(7), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mark] ? "X" : ""; });
+        Glib::RefPtr<Gtk::ListStore>::cast_dynamic(tree->get_model())
+            ->set_sort_column(MMUColumns::columns.id, Gtk::SORT_ASCENDING);
     };
 
     simMmuCellRender(mAlgMmu);

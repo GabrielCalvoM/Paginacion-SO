@@ -154,10 +154,33 @@ void Application::resetComputer(Computer &sim) {
 
 std::vector<MMUModel> getMMU(Computer &sim) {
     const auto ram = sim.mmu.ram();
+    const auto disk = sim.mmu.disk();
     std::vector<MMUModel> vec;
 
     for (const auto p : ram) {
-        vec.push_back({p.id, 0, p.isInRealMem(), p.id, p.isInRealMem() ? p.getPhysicalDir() : 0, 0, 0, p.hasSecondChance()});
+        vec.push_back({
+            p.id,
+            sim.mmu.getPageId(p.id),
+            p.isInRealMem(),
+            p.id,
+            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            0,
+            p.hasSecondChance()
+        });
+    }
+
+    for (const auto p : disk) {
+        vec.push_back({
+            p.id,
+            sim.mmu.getPageId(p.id),
+            p.isInRealMem(),
+            p.id,
+            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            0,
+            p.hasSecondChance()
+        });
     }
 
     return vec;
@@ -171,8 +194,7 @@ InfoModel getInfo(Computer &sim) {
         sim.mmu.getDiskSize(),
         sim.mmu.getLoadedPages(),
         sim.mmu.getUnloadedPages(),
-
-        // swap order
         sim.mmu.getThrashTime(),
-        sim.mmu.getFragmentation()};
+        sim.mmu.getFragmentation()
+    };
 }

@@ -14,13 +14,10 @@ const std::vector<Page>& Pointer::getPages() const {
 
 // --- Setters ---
 void Pointer::assignPages(int num, int size, unsigned int &idCount) { 
-    for (int i = 0; i < num; ++i) {
-        if (size >= 4096) {
-            mPages.push_back(Page(4096, idCount));
-            size -= 4096;
-        }
-        else {
-            mPages.push_back(Page(size, idCount));
-        }
+    while (size >= 4096) {
+        mPages.push_back(Page(4096, idCount));
+        size -= 4096;
     }
+    
+    mPages.push_back(Page(size, idCount));
 }

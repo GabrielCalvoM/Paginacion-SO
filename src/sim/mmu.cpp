@@ -181,7 +181,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     Pointer ptr(ptrIdCount);
     ptr.assignPages(static_cast<int>(pages), size, pageIdCount);
     std::vector<Page> &newPages = ptr.getPages();
-
+    for (auto p : newPages) mPageMap.emplace(p.id, ptr.id);
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
@@ -234,6 +234,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
     // Store Pointer Data (Table + Owner)
     mSimbolTable.emplace(ptr.id, ptr);
+    mPtrMap.emplace(ptr.id, pid);
 
     auto proc = mProcessList.find(pid);
     
