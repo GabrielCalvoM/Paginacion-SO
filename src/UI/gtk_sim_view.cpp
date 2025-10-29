@@ -98,7 +98,7 @@ void GtkSimView::initialize() {
     mBuilder->get_widget("PlayButton", mPlay);
     mBuilder->get_widget("PauseButton", mPause);
 
-    auto floatToString = [=](float value, int n) {
+    auto floatToString = [=](double value, int n) {
         std::ostringstream out;
         out << std::fixed << std::setprecision(n) << value;
         return out.str();
@@ -109,12 +109,15 @@ void GtkSimView::initialize() {
         setRendererText(tree->get_column(1));
         setRendererText(tree->get_column(2), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.loaded] ? "X" : ""; });
         setRendererText(tree->get_column(3));
-        setRendererText(tree->get_column(4), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mAddr] > 0 ?
-                                                                        std::to_string(row[MMUColumns::columns.mAddr]) : ""; });
-        setRendererText(tree->get_column(5), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.dAddr] > 0 ?
-                                                                        std::to_string(row[MMUColumns::columns.dAddr]) : ""; });
-        setRendererText(tree->get_column(6), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mAddr] > 0 ?
-                                                                        std::to_string(row[MMUColumns::columns.loadedTime]) : ""; });
+        setRendererText(tree->get_column(4), [=](Gtk::TreeRow &row)
+            { return row[MMUColumns::columns.mAddr] > 0 ?
+                std::to_string(row[MMUColumns::columns.mAddr]) : ""; });
+        setRendererText(tree->get_column(5), [=](Gtk::TreeRow &row)
+            { return row[MMUColumns::columns.dAddr] > 0 ?
+                std::to_string(row[MMUColumns::columns.dAddr]) : ""; });
+        setRendererText(tree->get_column(6), [=](Gtk::TreeRow &row)
+            { return row[MMUColumns::columns.mAddr] > 0 ?
+                std::to_string(row[MMUColumns::columns.loadedTime]) : ""; });
         setRendererText(tree->get_column(7), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mark] ? "X" : ""; });
     };
 
@@ -150,7 +153,8 @@ void GtkSimView::initialize() {
     auto thrashingCellRender = [=](Gtk::TreeView *tree) {
         setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return floatToString(row[InfoColumns::columns.thrashing] / 1024.0, 2) + "s"; });
         setRendererText(tree->get_column(1), [=](Gtk::TreeRow &row) 
-        { return floatToString(row[InfoColumns::columns.thrashing] == 0 ? 0 : row[InfoColumns::columns.thrashing] * 100.0 / row[InfoColumns::columns.time], 2) + "%"; });
+            { return floatToString(row[InfoColumns::columns.thrashing] == 0 || row[InfoColumns::columns.time] == 0
+                ? 0.0 : row[InfoColumns::columns.thrashing] * 100.0 / row[InfoColumns::columns.time], 2) + "%"; });
     };
     
     thrashingCellRender(mAlgThrashing);
