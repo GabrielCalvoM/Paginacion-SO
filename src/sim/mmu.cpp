@@ -185,7 +185,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
-    while (placedPages < pages && mRam.size() < mRam.capacity()) {
+    while (placedPages < pages && mRam.size() < 100) {
         
         Page &pg = newPages[placedPages];
         pg.setInRealMem(true);
@@ -273,7 +273,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         }
 
         //si hay espacio libre en RAM, colocar al final
-        if (mRam.size() < mRam.capacity()) {
+        if (mRam.size() < 100) {
             pg.setInRealMem(true);
             pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
             mRam.push_back(pg); // copia actualizada a RAM
