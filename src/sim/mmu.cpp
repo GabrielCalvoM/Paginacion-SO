@@ -269,10 +269,10 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     bool fault = 0;
     Page &pg = NULL;
     std::vector<Page>* pages;
-    printf("\n [EXE: use] - Ptr %u \n", ptrId);
 
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) { printf("\n [EXE: use] - NULL PTR \n"); return; }
+    printf("\n [EXE: use] - Ptr %u \n", it->id);
 
     pages = it->second.getPages();
     for (unsigned int i = 0; i < pages.size(); ++i) {
@@ -296,8 +296,10 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
             
             fault = true;
             pg.setInRealMem(true);
-            pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+            //pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
             mRam.push_back(pg); // copia actualizada a RAM
+
+            printf("\n [EXE: use] - Moving page to RAM %u at %u\n", pg.id, pg.getPhysicalDir());
             // notify algorithm of insert
             // if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
             continue;
@@ -354,6 +356,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     if (it == mSimbolTable.end()) return;
 
     Pointer &ptr = it->second;
+    printf("\n [EXE: del] - Ptr %u \n", ptr->id);
     std::vector<Page> pages = ptr.getPages(); //copia de las paginas
 
     //recolectar indices en RAM y DISK
@@ -362,6 +365,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
 
     for (const Page &pg : pages) {
         if (pg.isInRealMem()) {
+            printf("\n [EXE: del] - Deleting RAM page %u at %u\n", pg.id, pg.getPhysicalDir());
             unsigned int idx = pg.getPhysicalDir();
             //if index does not match -> try to find by id
             if (!(idx < mRam.size() && mRam[idx].id == pg.id)) {
@@ -371,8 +375,10 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
                 }
                 if (!found) continue;
             }
+            printf("\n [EXE: del] - Deletion Mark for RAM page %u = %u\n", pg.id, idx);
             ramIdxs.push_back(idx);
         } else {
+            printf("\n [EXE: del] - Deleting DISK page %u at %u\n", pg.id, pg.getPhysicalDir());
             unsigned int idx = pg.getPhysicalDir();
             if (!(idx < mDisk.size() && mDisk[idx].id == pg.id)) {
                 bool found = false;
@@ -381,6 +387,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
                 }
                 if (!found) continue;
             }
+            printf("\n [EXE: del] - Deletion Mark for DISK page %u = %u\n", pg.id, idx);
             diskIdxs.push_back(idx);
         }
     }
@@ -473,6 +480,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     mSimbolTable.erase(it);
 
     // count time for the delete instruction (no fault)
+    printf("\n [EXE: del] - Finish del instruction \n");
     addTime(false);
 
     //NOTA: No se elimina el puntero de la lista de punteros del proceso propietario!!!!
