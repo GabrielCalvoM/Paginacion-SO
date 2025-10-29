@@ -365,19 +365,6 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkButton" id="GenerateButton">
-                    <property name="label" translatable="yes">Generar instrucciones</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkEventBox" id="DragAndDrop">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -649,6 +636,19 @@
                     <property name="fill">True</property>
                     <property name="padding">10</property>
                     <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="GenerateButton">
+                    <property name="label" translatable="yes">Generar instrucciones</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
               </object>
