@@ -148,7 +148,7 @@ void GtkSimView::initialize() {
     pagesCellRender(mOptPages);
 
     auto thrashingCellRender = [=](Gtk::TreeView *tree) {
-        setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return floatToString(row[InfoColumns::columns.thrashing] / 1024.0, 2) + "KB"; });
+        setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return floatToString(row[InfoColumns::columns.thrashing] / 1024.0, 2) + "s"; });
         setRendererText(tree->get_column(1), [=](Gtk::TreeRow &row) 
         { return floatToString(row[InfoColumns::columns.thrashing] == 0 ? 0 : row[InfoColumns::columns.thrashing] * 100.0 / row[InfoColumns::columns.time], 2) + "%"; });
     };
@@ -157,7 +157,7 @@ void GtkSimView::initialize() {
     thrashingCellRender(mOptThrashing);
 
     auto fragmentationCellRender = [=](Gtk::TreeView *tree) {
-        setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return std::to_string(row[InfoColumns::columns.fragmentation]) + "s"; });
+        setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return std::to_string(row[InfoColumns::columns.fragmentation]) + "KB"; });
     };
 
     fragmentationCellRender(mAlgFragmentation);
