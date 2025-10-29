@@ -1,6 +1,7 @@
 #include "UI/gtk_sim_view.h"
 
 #include "constants.h"
+#include <gtkmm/main.h>
 #include <iomanip>
 
 namespace {
@@ -48,7 +49,6 @@ GtkSimView::GtkSimView() {}
 GtkSimView::~GtkSimView() {}
 
 void GtkSimView::setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MMUModel> mmu) const {
-    model->freeze_notify();
     model->clear();
     
     for (const auto p : mmu) {
@@ -63,12 +63,9 @@ void GtkSimView::setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MM
         row[MMUColumns::columns.loadedTime] = p.loadedTime;
         row[MMUColumns::columns.mark] = p.mark;
     }
-    model->thaw_notify();
 }
 
 void GtkSimView::setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel info) const {
-    model->freeze_notify();
-
     Gtk::TreeModel::Row row = *model->get_iter("0");
     row[InfoColumns::columns.processes] = info.processes;
     row[InfoColumns::columns.time] = info.time;
@@ -78,8 +75,6 @@ void GtkSimView::setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel inf
     row[InfoColumns::columns.unloadedPages] = info.unloadedPages;
     row[InfoColumns::columns.thrashing] = info.thrashing;
     row[InfoColumns::columns.fragmentation] = info.fragmentation;
-
-    model->thaw_notify();
 }
 
 void GtkSimView::initialize() {
@@ -168,6 +163,11 @@ void GtkSimView::initialize() {
     fragmentationCellRender(mAlgFragmentation);
     fragmentationCellRender(mOptFragmentation);
 
+    mOptMmu->get_model()->freeze_notify();
+    mAlgMmu->get_model()->freeze_notify();
+    mOptMain->get_model()->freeze_notify();
+    mAlgMain->get_model()->freeze_notify();
+
     mReset->signal_clicked().connect([this]() {
         if (mPlay->get_active()) mPlay->set_active(false);
         if (mPause->get_visible()) mPause->set_visible(false);
@@ -203,6 +203,35 @@ void GtkSimView::pauseConnect(std::function<void()> func) const {
 
 void GtkSimView::resetConnect(std::function<void()> func) const {
     mReset->signal_clicked().connect(func);
+}
+
+void GtkSimView::showState() const {
+    auto modelOptMmu = mOptMmu->get_model();
+    auto modelAlgMmu = mAlgMmu->get_model();
+    auto modelOptMain = mOptMain->get_model();
+    auto modelAlgMain = mAlgMain->get_model();
+    
+    modelOptMmu->thaw_notify();
+    modelAlgMmu->thaw_notify();
+    modelOptMain->thaw_notify();
+    modelAlgMain->thaw_notify();
+
+    while (Gtk::Main::events_pending())
+        Gtk::Main::iteration();
+
+    modelOptMmu->freeze_notify();
+    modelAlgMmu->freeze_notify();
+    modelOptMain->freeze_notify();
+    modelAlgMain->freeze_notify();
+}
+
+void GtkSimView::resetState() const {
+    setOptMMU({});
+    setAlgMMU({});
+    setOptInfo({0, 0, 0, 0, 0, 0, 0, 0});
+    setAlgInfo({0, 0, 0, 0, 0, 0, 0, 0});
+
+    showState();
 }
 
 static void setRendererText(Gtk::TreeViewColumn *column) {

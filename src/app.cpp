@@ -1,5 +1,6 @@
 #include "app.h"
 
+#include <glibmm/main.h>
 #include <iostream>
 
 std::vector<MMUModel> getMMU(Computer &sim);
@@ -37,13 +38,13 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         mAlgSimulation.mmu.printState();
 
         Computer::setPaused(false);
+        mcv.notify_all();
     });
     mWindow.simulationView().pauseConnect([this]() {
         if (mFinishedCount.load() >= 2) return;
         std::unique_lock<std::mutex> lock(mmtx);
         Computer::setPaused(true);
         mcv.notify_all();
-
         
     });
     mWindow.simulationView().resetConnect([this]() {
@@ -75,18 +76,34 @@ void Application::runSimulation() {
     while (!mResetRequest.load() && mIsRunning.load() && mFinishedCount.load() < 2) {
         std::unique_lock<std::mutex> lock(mmtx);
         std::cout << "Simulación: " << ++i << std::endl;
-        mcv.wait(lock, [&] { return mWaitCount.load() >= 2 || mFinishedCount.load() >= 2 || mResetRequest.load(); });
+        mcv.wait(lock, [&]{ return mWaitCount.load() >= 2 || mFinishedCount.load() >= 2 || mResetRequest.load(); });
         if (mResetRequest.load()) break;
         mWaitCount.store(0);
 
         lock.unlock();
 
-        mWindow.simulationView().setOptMMU(getMMU(mOptSimulation));
-        mWindow.simulationView().setOptInfo(getInfo(mOptSimulation));
-        mWindow.simulationView().setAlgMMU(getMMU(mAlgSimulation));
-        mWindow.simulationView().setAlgInfo(getInfo(mAlgSimulation));
+        mIsPrinting.store(true);
+
+        auto mmuOpt = getMMU(mOptSimulation);
+        auto infoOpt = getInfo(mOptSimulation);
+        auto mmuAlg = getMMU(mAlgSimulation);
+        auto infoAlg = getInfo(mAlgSimulation);
+
+        Glib::MainContext::get_default()->invoke([&, this]() {
+            mWindow.simulationView().setOptMMU(mmuOpt);
+            mWindow.simulationView().setOptInfo(infoOpt);
+            mWindow.simulationView().setAlgMMU(mmuAlg);
+            mWindow.simulationView().setAlgInfo(infoAlg);
+
+            mWindow.simulationView().showState();
+
+            mIsPrinting.store(false);
+            mcv.notify_all();
+            return false;
+        });
         
         std::unique_lock<std::mutex> lock2(mmtx);
+        mcv.wait(lock2, [&]{ return !mIsPrinting.load(); });
         mOptSimulation.setWaitThread(false);
         mAlgSimulation.setWaitThread(false);
         mcv.notify_all();
@@ -120,8 +137,11 @@ void Application::runComputer(Computer &sim) {
 
 void Application::resetSimulation() {
     mSimThread.join();
+
     resetComputer(mOptSimulation);
     resetComputer(mAlgSimulation);
+
+    mWindow.simulationView().resetState();
 
     mIsRunning.store(false);
     mWaitCount.store(0);

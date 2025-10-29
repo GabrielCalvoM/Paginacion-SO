@@ -70,6 +70,8 @@ public:
     void resetConnect(std::function<void()> func) const;
 
     void initialize();
+    void showState() const;
+    void resetState() const;
 
 };
 

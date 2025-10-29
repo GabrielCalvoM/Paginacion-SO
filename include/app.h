@@ -27,6 +27,7 @@ private:
 
     std::atomic<bool> mIsRunning = false;
     std::atomic<bool> mResetRequest = false;
+    std::atomic<bool> mIsPrinting = false;
     std::atomic<unsigned int> mWaitCount = 0;
     std::atomic<unsigned int> mFinishedCount = 0;
 

@@ -500,8 +500,13 @@ void MemoryManagementUnit::reset()
     // restaurar la capacidad reservada de RAM como en el constructor
     mRam.reserve(ramSize / Page::pageSize);
 
+    // reiniciar tiempos
+    thrashTime = 0;
+    algTime = 0;
+
     // reiniciar contador de id
     procCount = 0;
+    procIdCount = 0;
     ptrIdCount = 0;
     pageIdCount = 0;
 
