@@ -96,7 +96,8 @@ std::vector<unsigned int> Mru::execute(unsigned int pages) {
         mQueue.pop_front();
         mSet.erase(evId);
 
-        auto it = idToIndex.find(ev);
+        // Buscar por el id de página (evId), no por 'ev' (contador)
+        auto it = idToIndex.find(evId);
         if (it != idToIndex.end()) {
             evicted.push_back(it->second);
         }
