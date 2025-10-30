@@ -7,7 +7,14 @@
 #include <gtkmm/togglebutton.h>
 #include <gtkmm/treeview.h>
 
+typedef enum class PageAction {
+    createP,
+    modifyP,
+    deleteP
+} PageAction;
+
 typedef struct MMUModel {
+    PageAction action;
     guint id;
     guint pid;
     bool loaded;
@@ -52,6 +59,9 @@ private:
     Gtk::ToggleButton *mPause;
     
     void setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MMUModel> mmu) const;
+    void addPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
+    void uptPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
+    void delPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
     void setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel info) const;
     
 public:

@@ -8,11 +8,13 @@ unsigned int Page::getPhysicalDir() const { return mPhysicalDir; }
 int Page::getSpace() const { return space; }
 bool Page::isInRealMem() const { return mInRealMem; }
 bool Page::hasSecondChance() const { return mSecondChance; }
+unsigned int Page::getAccess() const { return mLastAccess; }
 //bool Page::getLastAccess() const { return mLastAccess; }
 
 // --- Setters ---
 void Page::setPhysicalDir(unsigned int dir) { mPhysicalDir = dir; }
 void Page::setInRealMem(bool value) { mInRealMem = value; }
+void Page::setAccess(unsigned int access) { mLastAccess = access; }
 void Page::setSecondChance(bool value) { mSecondChance = value; }
 void Page::setSpace(int value) { space = value; }
 

@@ -63,6 +63,53 @@ void GtkSimView::setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MM
         row[MMUColumns::columns.loadedTime] = p.loadedTime;
         row[MMUColumns::columns.mark] = p.mark;
     }
+    //for (const auto p : mmu) {
+    //    if (p.action == PageAction::createP) addPage(model, p);
+    //    if (p.action == PageAction::modifyP) uptPage(model, p);
+    //    if (p.action == PageAction::deleteP) delPage(model, p);
+    //}
+}
+
+void GtkSimView::addPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
+    auto row = *model->append();
+        
+    row[MMUColumns::columns.id] = page.id;
+    row[MMUColumns::columns.pid] = page.pid;
+    row[MMUColumns::columns.loaded] = page.loaded;
+    row[MMUColumns::columns.lAddr] = page.lAddr;
+    row[MMUColumns::columns.mAddr] = page.mAddr;
+    row[MMUColumns::columns.dAddr] = page.dAddr;
+    row[MMUColumns::columns.loadedTime] = page.loadedTime;
+    row[MMUColumns::columns.mark] = page.mark;
+}
+
+void GtkSimView::uptPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
+    auto it = *model->get_iter("0");
+    while ((*it)[MMUColumns::columns.id] != page.id) {
+        ++it;
+        if (it == model->children().end()) {
+            addPage(model, page);
+            return;
+        }
+    }
+
+    auto row = *it;
+
+    row[MMUColumns::columns.loaded] = page.loaded;
+    row[MMUColumns::columns.lAddr] = page.lAddr;
+    row[MMUColumns::columns.mAddr] = page.mAddr;
+    row[MMUColumns::columns.dAddr] = page.dAddr;
+    row[MMUColumns::columns.loadedTime] = page.loadedTime;
+    row[MMUColumns::columns.mark] = page.mark;
+}
+
+void GtkSimView::delPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
+    auto it = *model->get_iter("0");
+    while ((*it)[MMUColumns::columns.id] != page.id) {
+        ++it;
+        if (it == model->children().end()) return;
+    }
+    model->erase(it);
 }
 
 void GtkSimView::setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel info) const {
@@ -104,7 +151,7 @@ void GtkSimView::initialize() {
         return out.str();
     };
 
-    auto simMmuCellRender = [=](Gtk::TreeView *tree) {
+    auto simMmuCellRender = [=](Gtk::TreeView *tree, Glib::RefPtr<Gtk::ListStore> model) {
         setRendererText(tree->get_column(0));
         setRendererText(tree->get_column(1));
         setRendererText(tree->get_column(2), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.loaded] ? "X" : ""; });
@@ -116,15 +163,16 @@ void GtkSimView::initialize() {
             { return row[MMUColumns::columns.dAddr] > 0 ?
                 std::to_string(row[MMUColumns::columns.dAddr]) : ""; });
         setRendererText(tree->get_column(6), [=](Gtk::TreeRow &row)
-            { return row[MMUColumns::columns.mAddr] > 0 ?
+            { unsigned int totalTime = (*model->get_iter("0"))[InfoColumns::columns.time];
+                return row[MMUColumns::columns.mAddr] > 0 ?
                 std::to_string(row[MMUColumns::columns.loadedTime]) + "s" : ""; });
         setRendererText(tree->get_column(7), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mark] ? "X" : ""; });
         Glib::RefPtr<Gtk::ListStore>::cast_dynamic(tree->get_model())
             ->set_sort_column(MMUColumns::columns.id, Gtk::SORT_ASCENDING);
     };
 
-    simMmuCellRender(mAlgMmu);
-    simMmuCellRender(mOptMmu);
+    simMmuCellRender(mAlgMmu, Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mAlgMain->get_model()));
+    simMmuCellRender(mOptMmu, Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mOptMain->get_model()));
     
     auto simTimeCellRender = [=](Gtk::TreeView *tree) {
         setRendererText(tree->get_column(0));

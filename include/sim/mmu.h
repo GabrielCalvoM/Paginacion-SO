@@ -22,16 +22,20 @@ private:
     std::unordered_map<unsigned int, Pointer> mSimbolTable;
     std::unordered_map<unsigned int, unsigned int> mPageMap;
     std::unordered_map<unsigned int, unsigned int> mPtrMap;
-    std::set<unsigned int> mRamAddresses;
-    std::set<unsigned int> mDiskAddresses;
+
     std::vector<Page> mPageLoadedTime;
     std::vector<Page> mRam;
     std::vector<Page> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
+    std::set<unsigned int> mPagesCreated;
+    std::set<unsigned int> mPagesModified;
+    std::vector<unsigned int> mPagesDeleted;
     unsigned int thrashTime = 0;
     unsigned int algTime = 0;
-
+    
+    std::set<unsigned int> mRamAddresses;
+    std::set<unsigned int> mDiskAddresses;
     unsigned int procCount = 0;
     unsigned int procIdCount = 0;
     unsigned int ptrIdCount = 0;
@@ -46,6 +50,19 @@ public:
     // --- Getters ---
     const std::vector<Page> &ram() const { return mRam; }
     const std::vector<Page> &disk() const { return mDisk; }
+    const std::vector<Page*> pagesCreated() const {
+        std::vector <Page*> vec;
+        for (auto p : mRam) if (mPagesCreated.find(p.id) == mPagesCreated.end()) vec.push_back(&p);
+        for (auto p : mDisk) if (mPagesCreated.find(p.id) == mPagesCreated.end()) vec.push_back(&p);
+        return vec;
+    }
+    const std::vector<Page*> pagesModified() const {
+        std::vector <Page*> vec;
+        for (auto p : mRam) if (mPagesModified.find(p.id) == mPagesModified.end()) vec.push_back(&p);
+        for (auto p : mDisk) if (mPagesModified.find(p.id) == mPagesModified.end()) vec.push_back(&p);
+        return vec;
+    }
+    const std::vector<unsigned int> &pagesDeleted() const { return mPagesDeleted; }
     const unsigned int getPageId(unsigned int id) const { return mPtrMap.at(mPageMap.at(id)); }
     const unsigned int getProcesses() const { return mProcessList.size(); }
     const unsigned int getRamSize() const {

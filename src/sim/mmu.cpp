@@ -122,6 +122,9 @@ void MemoryManagementUnit::executeIntSet(const IntSet &iset)
 void MemoryManagementUnit::executeInstruction(const Instruction *i) 
 {
     unsigned int p = i->param1;
+    mPagesCreated.clear();
+    mPagesModified.clear();
+    mPagesDeleted.clear();
     
     switch (i->type) {
         // Call New
@@ -170,9 +173,6 @@ void MemoryManagementUnit::addTime(bool fault) {
 // --- PROC METHOD: NEW PTR ---
 unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size) 
 {
-    // BOOL FAULT
-    bool fault = 0;
-
     // Compute Pages
     unsigned int pages = size / Page::pageSize;
     if (size % Page::pageSize != 0) ++pages;
@@ -181,7 +181,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     Pointer ptr(ptrIdCount);
     ptr.assignPages(static_cast<int>(pages), size, pageIdCount);
     std::vector<Page> &newPages = ptr.getPages();
-    for (auto p : newPages) mPageMap.emplace(p.id, ptr.id);
+    for (auto p : newPages) { mPageMap.emplace(p.id, ptr.id); mPagesCreated.insert(p.id); }
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
@@ -199,13 +199,11 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
         // consume Time
         addTime(false);
+        pg.setAccess(algTime);
     }
 
     // Fill Extra in DISK FAULT
     if (placedPages < pages) {
-        // FAULT
-        fault = 1;
-
         unsigned int remaining = pages - placedPages;
         std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
 
@@ -218,16 +216,20 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             ev.setInRealMem(false);
             ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
             mDisk.push_back(ev);
-
+            mPagesModified.insert(ev.id);
+            
             // move extra to frame
             Page &frame = mRam[idx];
             frame.setInRealMem(true);
             frame.setPhysicalDir(idx);
+            mPagesModified.insert(frame.id);
             
             // Copy Mut Attributes
             const Page &src  = newPages[placedPages];
 
             ++placedPages;
+            addTime(true);
+            frame.setAccess(algTime);
         }
 
     }
@@ -246,8 +248,6 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         proc->second->assignPtr(ptr.id);
     }
 
-
-    addTime(fault);
     return ptr.id;
 }
 
@@ -255,16 +255,16 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 // --- PROC METHOD: USE PTR ---
 void MemoryManagementUnit::usePtr(unsigned int ptrId)
 {
-    // BOOL FAULT
-    bool fault = 0;
-
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) return;
-
+    
     std::vector<Page> &pages = it->second.getPages();
     for (unsigned int i = 0; i < pages.size(); ++i) {
+        // BOOL FAULT
+        bool fault = 0;
+        
         Page &pg = pages[i];
-
+        
         // si ya esta en RAM -> mark access for algorithms that need it
         if (pg.isInRealMem()) { 
             // mark second chance bit
@@ -321,10 +321,11 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         // notify algorithm of insert
         if (mAlgorithm) mAlgorithm->onInsert(pg.id, idx);
 
-        
+        addTime(fault);
+        pg.setAccess(algTime);
+        frame.setAccess(algTime);
     }
 
-    addTime(fault);
 }
 
 

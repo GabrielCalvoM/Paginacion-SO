@@ -25,11 +25,12 @@ public:
     int getSpace() const;
     bool isInRealMem() const;
     bool hasSecondChance() const;
+    unsigned int getAccess() const;
 
     // --- Setters ---
     void setPhysicalDir(unsigned int);
     void setInRealMem(bool);
-    void setAccess(int);
+    void setAccess(unsigned int);
     void setSecondChance(bool);
     void setSpace(int);
 

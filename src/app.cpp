@@ -4,6 +4,7 @@
 #include <iostream>
 
 std::vector<MMUModel> getMMU(Computer &sim);
+static MMUModel getPageInfo(Computer &sim, const Page &p, PageAction action);
 InfoModel getInfo(Computer &sim);
 
 Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstructions) {
@@ -153,37 +154,65 @@ void Application::resetComputer(Computer &sim) {
 }
 
 std::vector<MMUModel> getMMU(Computer &sim) {
+    std::vector<MMUModel> vec;
     const auto ram = sim.mmu.ram();
     const auto disk = sim.mmu.disk();
-    std::vector<MMUModel> vec;
 
     for (const auto p : ram) {
-        vec.push_back({
-            p.id,
-            sim.mmu.getPageId(p.id),
-            p.isInRealMem(),
-            p.id,
-            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            0,
-            p.hasSecondChance()
-        });
+        vec.push_back(getPageInfo(sim, p, PageAction::createP));
     }
 
     for (const auto p : disk) {
-        vec.push_back({
-            p.id,
-            sim.mmu.getPageId(p.id),
-            p.isInRealMem(),
-            p.id,
-            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            0,
-            p.hasSecondChance()
-        });
+        vec.push_back(getPageInfo(sim, p, PageAction::createP));
     }
 
+    //for (const auto p : sim.mmu.pagesCreated()) {
+    //    vec.push_back({
+    //        PageAction::createP,
+    //        p->id,
+    //        sim.mmu.getPageId(p->id),
+    //        p->isInRealMem(),
+    //        p->id,
+    //        p->isInRealMem() ? p->getPhysicalDir()+1 : 0,
+    //        !p->isInRealMem() ? p->getPhysicalDir()+1 : 0,
+    //        0,
+    //        p->hasSecondChance()
+    //    });
+    //}
+
+    //for (const auto p : sim.mmu.pagesModified()) {
+    //    vec.push_back({
+    //        PageAction::modifyP,
+    //        p->id,
+    //        sim.mmu.getPageId(p->id),
+    //        p->isInRealMem(),
+    //        p->id,
+    //        p->isInRealMem() ? p->getPhysicalDir()+1 : 0,
+    //        !p->isInRealMem() ? p->getPhysicalDir()+1 : 0,
+    //        0,
+    //        p->hasSecondChance()
+    //    });
+    //}
+
+    //for (const auto id : sim.mmu.pagesDeleted()) {
+    //    vec.push_back({ PageAction::deleteP, id });
+    //}
+
     return vec;
+}
+
+static MMUModel getPageInfo(Computer &sim, const Page &p, PageAction action) {
+    return{
+        action,
+        p.id,
+        sim.mmu.getPageId(p.id),
+        p.isInRealMem(),
+        p.id,
+        p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+        !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+        p.getAccess(),
+        p.hasSecondChance()
+    };
 }
 
 InfoModel getInfo(Computer &sim) {
