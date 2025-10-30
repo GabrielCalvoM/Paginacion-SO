@@ -826,20 +826,15 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="shadow-type">in</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkTreeView" id="RamOptView">
+                              <object class="GtkDrawingArea" id="RamOptView">
                                 <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="model">VoidModel</property>
-                                <property name="headers-visible">False</property>
-                                <property name="enable-grid-lines">both</property>
-                                <child internal-child="selection">
-                                  <object class="GtkTreeSelection"/>
-                                </child>
+                                <property name="can-focus">False</property>
+                                <property name="height-request">60</property>
                               </object>
                             </child>
                           </object>
@@ -874,20 +869,15 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="shadow-type">in</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkTreeView" id="RamAlgView">
+                              <object class="GtkDrawingArea" id="RamAlgView">
                                 <property name="visible">True</property>
-                                <property name="can-focus">True</property>
-                                <property name="model">VoidModel</property>
-                                <property name="headers-visible">False</property>
-                                <property name="enable-grid-lines">both</property>
-                                <child internal-child="selection">
-                                  <object class="GtkTreeSelection"/>
-                                </child>
+                                <property name="can-focus">False</property>
+                                <property name="height-request">60</property>
                               </object>
                             </child>
                           </object>

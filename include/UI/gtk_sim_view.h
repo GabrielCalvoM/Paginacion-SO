@@ -3,18 +3,16 @@
 
 #include <gtkmm/builder.h>
 #include <gtkmm/liststore.h>
+#include <gtkmm/treeview.h>
 #include <gtkmm/scale.h>
 #include <gtkmm/togglebutton.h>
-#include <gtkmm/treeview.h>
-
-typedef enum class PageAction {
-    createP,
-    modifyP,
-    deleteP
-} PageAction;
+#include <gtkmm/drawingarea.h>
+#include <gdkmm/rgba.h>
+#include <cairomm/context.h>
+#include <glibmm/ustring.h>
+#include <vector>
 
 typedef struct MMUModel {
-    PageAction action;
     guint id;
     guint pid;
     bool loaded;
@@ -47,6 +45,8 @@ private:
     Gtk::TreeView *mOptMain;
     Gtk::TreeView *mAlgRam;
     Gtk::TreeView *mOptRam;
+    Gtk::DrawingArea *mRamAlgBar;
+    Gtk::DrawingArea *mRamOptBar;
     Gtk::TreeView *mAlgPages;
     Gtk::TreeView *mOptPages;
     Gtk::TreeView *mAlgThrashing;
@@ -54,23 +54,33 @@ private:
     Gtk::TreeView *mAlgFragmentation;
     Gtk::TreeView *mOptFragmentation;
 
+    std::vector<Gdk::RGBA> mRamOptColors;
+    std::vector<Gdk::RGBA> mRamAlgColors;
+    std::vector<Glib::ustring> mRamOptLabels;
+    std::vector<Glib::ustring> mRamAlgLabels;
+
     Gtk::Button *mReset;
     Gtk::ToggleButton *mPlay;
     Gtk::ToggleButton *mPause;
     
     void setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MMUModel> mmu) const;
-    void addPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
-    void uptPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
-    void delPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const;
     void setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel info) const;
+    void updateRamBar(Gtk::DrawingArea *area,
+                      std::vector<Gdk::RGBA> &colors,
+                      std::vector<Glib::ustring> &labels,
+                      const std::vector<MMUModel> &mmu) const;
+    bool onRamDraw(const Cairo::RefPtr<Cairo::Context> &cr,
+                   const std::vector<Gdk::RGBA> &colors,
+                   const std::vector<Glib::ustring> &labels,
+                   Gtk::DrawingArea *area) const;
     
 public:
     GtkSimView();
     ~GtkSimView();
     
     void setBuilder(Glib::RefPtr<Gtk::Builder> builder) { mBuilder = builder; }
-    void setOptMMU(const std::vector<MMUModel> mmu) const { setMMU(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mOptMmu->get_model()), mmu); }
-    void setAlgMMU(const std::vector<MMUModel> mmu) const { setMMU(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mAlgMmu->get_model()), mmu); }
+    void setOptMMU(const std::vector<MMUModel> mmu) const;
+    void setAlgMMU(const std::vector<MMUModel> mmu) const;
     void setOptInfo(const InfoModel info) const { setInfo(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mOptMain->get_model()), info); }
     void setAlgInfo(const InfoModel info) const { setInfo(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mAlgMain->get_model()), info); }
 
