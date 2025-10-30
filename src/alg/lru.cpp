@@ -33,18 +33,18 @@ void Lru::onEvict(unsigned int pageId, unsigned int frameIdx) {
     if (it != mLastAccess.end()) mLastAccess.erase(it);
 }
 
-std::vector<unsigned int> Lru::execute(const std::vector<Page> &bufRAM, unsigned int pages) {
+std::vector<unsigned int> Lru::execute(unsigned int pages) {
     std::vector<unsigned int> evicted;
-    if (bufRAM.empty() || pages == 0) return evicted;
+    if (mRam.empty() || pages == 0) return evicted;
 
-    unsigned int frameCount = static_cast<unsigned int>(bufRAM.size());
+    unsigned int frameCount = static_cast<unsigned int>(mRam.size());
     unsigned int need = std::min<unsigned int>(pages, frameCount);
 
     // Build vector of (lastAccess, frameIdx)
     std::vector<std::pair<unsigned long long, unsigned int>> items;
     items.reserve(frameCount);
     for (unsigned int i = 0; i < frameCount; ++i) {
-        unsigned int pid = bufRAM[i].id;
+        unsigned int pid = mRam[i].id;
         unsigned long long ts = 0;
         auto it = mLastAccess.find(pid);
         if (it != mLastAccess.end()) ts = it->second;

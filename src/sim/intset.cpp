@@ -45,7 +45,6 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
             
             // store mapping
             ptrToPages[ptrId] = pagesVec;
-            break;
         }
 
         case useI: {

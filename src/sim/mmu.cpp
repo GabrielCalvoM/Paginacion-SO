@@ -125,7 +125,8 @@ void MemoryManagementUnit::executeInstruction(const Instruction *i)
     mPagesCreated.clear();
     mPagesModified.clear();
     mPagesDeleted.clear();
-    
+    mLoadedPages = mUnloadedPages = 0;
+
     switch (i->type) {
         // Call New
         case newI: {
@@ -169,6 +170,19 @@ void MemoryManagementUnit::addTime(bool fault) {
     }
 }
 
+void MemoryManagementUnit::insertPageOnDisk(Page &page) {
+    page.setInRealMem(false);
+    page.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+    mDisk.push_back(page);
+}
+
+void MemoryManagementUnit::insertPageOnRam(Page &page) {
+    page.setInRealMem(true);
+    page.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+    mRam.push_back(page);
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // --- PROC METHOD: NEW PTR ---
 unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size) 
@@ -196,6 +210,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
         if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
 
         ++placedPages;
+        mLoadedPages++;
 
         // consume Time
         addTime(false);
@@ -205,7 +220,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     // Fill Extra in DISK FAULT
     if (placedPages < pages) {
         unsigned int remaining = pages - placedPages;
-        std::vector<unsigned int> evictIndex = mAlgorithm->execute(mRam, remaining);
+        std::vector<unsigned int> evictIndex = mAlgorithm->execute(remaining);
 
         for (unsigned int idx : evictIndex) {
             if (placedPages >= pages) break; // FINISH
@@ -227,6 +242,8 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             // Copy Mut Attributes
             const Page &src  = newPages[placedPages];
 
+            mLoadedPages++;
+            mUnloadedPages++;
             ++placedPages;
             addTime(true);
             frame.setAccess(algTime);
@@ -272,6 +289,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
             if (mAlgorithm) mAlgorithm->onAccess(pg.id);
             continue; 
         }
+        mLoadedPages++;
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < 100) {
@@ -282,6 +300,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
             if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
             continue;
         }
+        mUnloadedPages++;
 
         // signals
         if (mAlgorithm) {
@@ -290,7 +309,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         }
 
         //no hay espacio -> pedir al algoritmo indices a desalojar
-        std::vector<unsigned int> evictIdx = mAlgorithm->execute(mRam, 1);
+        std::vector<unsigned int> evictIdx = mAlgorithm->execute(1);
         if (evictIdx.empty()) continue; // guard
         else { fault = 1; }
 

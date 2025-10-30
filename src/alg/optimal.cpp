@@ -9,8 +9,8 @@
 
 
 // Constructor
-Optimal::Optimal(std::vector<Page>& bufRAM, const std::vector<unsigned int>& accessSequence)
-    : IAlgorithm(bufRAM), mAccessSequence(accessSequence), mCurIndex(0)
+Optimal::Optimal(std::vector<Page>& mRam, const std::vector<unsigned int>& accessSequence)
+    : IAlgorithm(mRam), mAccessSequence(accessSequence), mCurIndex(0)
 {
     // Ocurrence Map Build
     for (size_t idx = 0; idx < mAccessSequence.size(); ++idx) {
@@ -28,16 +28,16 @@ void Optimal::optForesee(unsigned int pageId)
 }
 
 // Execution: evict using Belady (farthest next use or never)
-std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsigned int pages) 
+std::vector<unsigned int> Optimal::execute(unsigned int pages) 
 {
     printf("\n [OPT]-Start \n");
 
     std::vector<unsigned int> evicted;
-    if (pages == 0 || bufRAM.empty()) return evicted;
+    if (pages == 0 || mRam.empty()) return evicted;
 
     // track Frames
     std::vector<unsigned int> frames;
-    for (unsigned int i = 0; i < bufRAM.size(); ++i) {
+    for (unsigned int i = 0; i < mRam.size(); ++i) {
         frames.push_back(i);
     }
 
@@ -48,7 +48,7 @@ std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsi
         // Remove frames when their page is found
         for (size_t j = 0; j < frames.size(); ++j) {
             unsigned int f = frames[j];
-            if (bufRAM[f].id == futurePageId) {
+            if (mRam[f].id == futurePageId) {
                 frames.erase(frames.begin() + j);
                 break;  // Only remove first match
             }
@@ -67,7 +67,7 @@ std::vector<unsigned int> Optimal::execute(const std::vector<Page> &bufRAM, unsi
     if (evicted.size() < pages) {
         // This shouldn't normally happen, but as a safeguard:
         std::unordered_set<unsigned int> alreadyEvicted(evicted.begin(), evicted.end());
-        for (unsigned int i = 0; i < bufRAM.size() && evicted.size() < pages; ++i) {
+        for (unsigned int i = 0; i < mRam.size() && evicted.size() < pages; ++i) {
             if (alreadyEvicted.find(i) == alreadyEvicted.end()) {
                 evicted.push_back(i);
             }

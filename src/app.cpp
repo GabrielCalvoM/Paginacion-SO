@@ -210,7 +210,7 @@ static MMUModel getPageInfo(Computer &sim, const Page &p, PageAction action) {
         p.id,
         p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
         !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-        p.getAccess(),
+        sim.mmu.getAlgTime() - p.getAccess(),
         p.hasSecondChance()
     };
 }

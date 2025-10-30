@@ -31,18 +31,18 @@ void Fifo::onEvict(unsigned int pageId, unsigned int frameIdx) {
     (void)frameIdx;
 }
 
-std::vector<unsigned int> Fifo::execute(const std::vector<Page> &bufRAM, unsigned int pages)
+std::vector<unsigned int> Fifo::execute(unsigned int pages)
 {
     std::vector<unsigned int> evicted;
-    if (bufRAM.empty() || pages == 0) return evicted;
+    if (mRam.empty() || pages == 0) return evicted;
 
     // Build set of current page ids in RAM and map id->index
     std::unordered_set<unsigned int> currentIds;
-    currentIds.reserve(bufRAM.size()*2);
+    currentIds.reserve(mRam.size()*2);
     std::unordered_map<unsigned int, unsigned int> idToIndex;
-    idToIndex.reserve(bufRAM.size()*2);
-    for (unsigned int idx = 0; idx < bufRAM.size(); ++idx) {
-        unsigned int id = bufRAM[idx].id;
+    idToIndex.reserve(mRam.size()*2);
+    for (unsigned int idx = 0; idx < mRam.size(); ++idx) {
+        unsigned int id = mRam[idx].id;
         currentIds.insert(id);
         idToIndex[id] = idx;
     }
@@ -62,8 +62,8 @@ std::vector<unsigned int> Fifo::execute(const std::vector<Page> &bufRAM, unsigne
     mSet.reserve(mQueue.size()*2);
     for (unsigned int id : mQueue) mSet.insert(id);
 
-    // Append any pages in bufRAM that are not yet in the queue
-    for (const Page &p : bufRAM) {
+    // Append any pages in mRam that are not yet in the queue
+    for (const Page &p : mRam) {
         unsigned int id = p.id;
         if (mSet.find(id) == mSet.end()) {
             mQueue.push_back(id);

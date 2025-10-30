@@ -17,15 +17,15 @@ Random::Random(std::vector<Page> &ram, unsigned int seed) : IAlgorithm(ram) {
 }
 
 // EXECUTION
-std::vector<unsigned int> Random::execute(const std::vector<Page> &bufRAM, unsigned int pages) 
+std::vector<unsigned int> Random::execute(unsigned int pages) 
 {
     printf("\n [RND]-Start \n");
     std::vector<unsigned int> evicted;
-    if (pages == 0 || bufRAM.empty()) return evicted;
+    if (pages == 0 || mRam.empty()) return evicted;
 
     // Define array
-    std::vector<unsigned int> roulette(bufRAM.size());
-    for (unsigned int i = 0; i < bufRAM.size(); ++i)
+    std::vector<unsigned int> roulette(mRam.size());
+    for (unsigned int i = 0; i < mRam.size(); ++i)
         roulette[i] = i;
 
     // Choose random and select the first in range [0, pages]

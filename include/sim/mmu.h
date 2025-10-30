@@ -31,6 +31,8 @@ private:
     std::set<unsigned int> mPagesCreated;
     std::set<unsigned int> mPagesModified;
     std::vector<unsigned int> mPagesDeleted;
+    unsigned int mLoadedPages = 0;
+    unsigned int mUnloadedPages = 0;
     unsigned int thrashTime = 0;
     unsigned int algTime = 0;
     
@@ -40,6 +42,9 @@ private:
     unsigned int procIdCount = 0;
     unsigned int ptrIdCount = 0;
     unsigned int pageIdCount = 0;
+
+    void insertPageOnDisk(Page &);
+    void insertPageOnRam(Page &);
     
 public:
     static const unsigned int ramSize = Consts::MAX_RAM; // 400 KB
@@ -58,7 +63,7 @@ public:
     }
     const std::vector<Page*> pagesModified() const {
         std::vector <Page*> vec;
-        for (auto p : mRam) if (mPagesModified.find(p.id) == mPagesModified.end()) vec.push_back(&p);
+        for (auto p : mRam) vec.push_back(&p);
         for (auto p : mDisk) if (mPagesModified.find(p.id) == mPagesModified.end()) vec.push_back(&p);
         return vec;
     }

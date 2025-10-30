@@ -8,11 +8,11 @@
 
 SecondChance::SecondChance(std::vector<Page> &ram) : IAlgorithm(ram), mHand(0) {}
 
-std::vector<unsigned int> SecondChance::execute(const std::vector<Page> &bufRAM, unsigned int pages)
+std::vector<unsigned int> SecondChance::execute(unsigned int pages)
 {
     std::vector<unsigned int> evicted;
-    if (bufRAM.empty() || pages == 0) return evicted;
-    unsigned int frameCount = static_cast<unsigned int>(bufRAM.size());
+    if (mRam.empty() || pages == 0) return evicted;
+    unsigned int frameCount = static_cast<unsigned int>(mRam.size());
     unsigned int need = std::min<unsigned int>(pages, frameCount);
 
     // Ensure hand is in range

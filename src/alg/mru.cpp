@@ -50,19 +50,19 @@ void Mru::onEvict(unsigned int pageId, unsigned int frameIdx) {
 
 ////////////////////////////////////////////////////////////////////////
 // EXECUTION
-std::vector<unsigned int> Mru::execute(const std::vector<Page>& bufRAM, unsigned int pages) {
+std::vector<unsigned int> Mru::execute(unsigned int pages) {
     printf("\n [MRU]-Start \n");
     std::vector<unsigned int> evicted;
-    if (bufRAM.empty() || pages == 0) return evicted;
+    if (mRam.empty() || pages == 0) return evicted;
 
     // Data Structure Implementation
     std::unordered_set<unsigned int> currentIds;
-    currentIds.reserve(bufRAM.size() * 2);
+    currentIds.reserve(mRam.size() * 2);
     std::unordered_map<unsigned int, unsigned int> idToIndex;
-    idToIndex.reserve(bufRAM.size() * 2);
+    idToIndex.reserve(mRam.size() * 2);
 
-    for (unsigned int idx = 0; idx < bufRAM.size(); ++idx) {
-        unsigned int id = bufRAM[idx].id;
+    for (unsigned int idx = 0; idx < mRam.size(); ++idx) {
+        unsigned int id = mRam[idx].id;
         currentIds.insert(id);
         idToIndex[id] = idx;
     }
@@ -80,7 +80,7 @@ std::vector<unsigned int> Mru::execute(const std::vector<Page>& bufRAM, unsigned
     // Rebuild Set
     mSet.clear();
     mSet.reserve(mQueue.size() * 2);
-    for (const Page &p : bufRAM) {
+    for (const Page &p : mRam) {
         unsigned int id = p.id;
         if (mSet.find(id) == mSet.end()) {
             mQueue.push_back(id);
