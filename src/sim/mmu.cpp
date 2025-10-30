@@ -232,7 +232,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             // move extra to frame (replace the evicted slot)
             Page &frame = mRam[idx];
             frame.~Page();
-            new (&frame) Page(newPages[placedPages])
+            new (&frame) Page(newPages[placedPages]);
             frame.setInRealMem(true);
             frame.setPhysicalDir(idx);
 
