@@ -10,7 +10,7 @@
 
 class Fifo : public IAlgorithm {
 public:
-    Fifo(std::vector<Page>&);
+    Fifo(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&);
     std::vector<unsigned int> execute(unsigned int pages) override;
     void onInsert(unsigned int pageId, unsigned int frameIdx) override;
     void onAccess(unsigned int pageId) override;

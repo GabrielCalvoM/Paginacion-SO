@@ -8,7 +8,7 @@
 // LRU implementation using an incrementing timestamp updated on page accesses.
 // optForesee(pageId) is used by MMU to notify the algorithm of a page access.
 
-Lru::Lru(std::vector<Page> &ram) : IAlgorithm(ram), mClock(0) {}
+Lru::Lru(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram) : IAlgorithm(ram), mClock(0) {}
 
 void Lru::optForesee(unsigned int pageId) {
     // record the access time for this page id
@@ -44,7 +44,7 @@ std::vector<unsigned int> Lru::execute(unsigned int pages) {
     std::vector<std::pair<unsigned long long, unsigned int>> items;
     items.reserve(frameCount);
     for (unsigned int i = 0; i < frameCount; ++i) {
-        unsigned int pid = mRam[i].id;
+        unsigned int pid = (*mRam[i])->id;
         unsigned long long ts = 0;
         auto it = mLastAccess.find(pid);
         if (it != mLastAccess.end()) ts = it->second;

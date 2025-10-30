@@ -1,6 +1,8 @@
 #ifndef ALGORITHM_H
 #define ALGORITHM_H
 
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "sim/page.h"
@@ -26,11 +28,11 @@ typedef enum class AlgType {
 
 class IAlgorithm {
 protected:
-    std::vector<Page> &mRam;
+    std::unordered_map<unsigned int, std::unique_ptr<Page>*> &mRam;
     
 
 public:
-    IAlgorithm(std::vector<Page>&);
+    IAlgorithm(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&);
     virtual ~IAlgorithm() = default;
     AlgType type;
 

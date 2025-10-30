@@ -17,10 +17,12 @@ class Optimal : public IAlgorithm {
         size_t mCurIndex = 0;
 
     public:
-        Optimal(std::vector<Page>& mRam, const std::vector<unsigned int>& pages);
+        Optimal(std::unordered_map<unsigned int, std::unique_ptr<Page>*>& mRam, const std::vector<unsigned int>& pages);
         std::vector<unsigned int> execute(unsigned int pages);
         
         void optForesee(unsigned int pageId) override;
+        void onAccess(unsigned int pageId) override;
+        void onInsert(unsigned int pageId, unsigned int idx) override;
 };
 
 #endif // OPTIMAL_H

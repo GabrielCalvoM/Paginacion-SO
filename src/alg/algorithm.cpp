@@ -3,4 +3,4 @@
 #include <vector>
 
 // Constructor
-IAlgorithm::IAlgorithm(std::vector<Page> &ram) : mRam(ram) {}
+IAlgorithm::IAlgorithm(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram) : mRam(ram) {}

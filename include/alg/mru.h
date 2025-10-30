@@ -11,7 +11,7 @@
 
 class Mru : public IAlgorithm {
 public:
-    Mru(std::vector<Page>&);
+    Mru(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&);
     std::vector<unsigned int> execute(unsigned int pages) override;
 
     void mruUpdate(unsigned int pageId);

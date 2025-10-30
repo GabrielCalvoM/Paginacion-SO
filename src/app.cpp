@@ -157,29 +157,29 @@ std::vector<MMUModel> getMMU(Computer &sim) {
     const auto disk = sim.mmu.disk();
     std::vector<MMUModel> vec;
 
-    for (const auto p : ram) {
+    for (const auto &p : ram) {
         vec.push_back({
-            p.id,
-            sim.mmu.getPageId(p.id),
-            p.isInRealMem(),
-            p.id,
-            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            (*p.second)->id,
+            sim.mmu.getPageId((*p.second)->id),
+            (*p.second)->isInRealMem(),
+            (*p.second)->id,
+            (*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
+            !(*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
             0,
-            p.hasSecondChance()
+            (*p.second)->hasSecondChance()
         });
     }
 
-    for (const auto p : disk) {
+    for (const auto &p : disk) {
         vec.push_back({
-            p.id,
-            sim.mmu.getPageId(p.id),
-            p.isInRealMem(),
-            p.id,
-            p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
-            !p.isInRealMem() ? p.getPhysicalDir()+1 : 0,
+            (*p.second)->id,
+            sim.mmu.getPageId((*p.second)->id),
+            (*p.second)->isInRealMem(),
+            (*p.second)->id,
+            (*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
+            !(*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
             0,
-            p.hasSecondChance()
+            (*p.second)->hasSecondChance()
         });
     }
 

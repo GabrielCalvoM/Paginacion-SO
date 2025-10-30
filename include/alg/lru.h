@@ -10,7 +10,7 @@
 
 class Lru : public IAlgorithm {
 public:
-    Lru(std::vector<Page>&);
+    Lru(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&);
     std::vector<unsigned int> execute(unsigned int pages) override;
     void optForesee(unsigned int pageId) override;
     void onInsert(unsigned int pageId, unsigned int frameIdx) override;

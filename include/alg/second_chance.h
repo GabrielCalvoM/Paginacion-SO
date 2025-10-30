@@ -9,7 +9,7 @@
 
 class SecondChance : public IAlgorithm {
 public:
-    SecondChance(std::vector<Page>&);
+    SecondChance(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&);
     std::vector<unsigned int> execute(unsigned int pages) override;
     void onInsert(unsigned int pageId, unsigned int frameIdx) override { (void)pageId; (void)frameIdx; }
     void onAccess(unsigned int pageId) override { (void)pageId; }

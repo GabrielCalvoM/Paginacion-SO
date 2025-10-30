@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 // FIFO implementation optimized for large queues.
-Fifo::Fifo(std::vector<Page> &ram) : IAlgorithm(ram) {}
+Fifo::Fifo(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram) : IAlgorithm(ram) {}
 
 void Fifo::onInsert(unsigned int pageId, unsigned int frameIdx) {
     // If not present, push to back
@@ -41,10 +41,11 @@ std::vector<unsigned int> Fifo::execute(unsigned int pages)
     currentIds.reserve(mRam.size()*2);
     std::unordered_map<unsigned int, unsigned int> idToIndex;
     idToIndex.reserve(mRam.size()*2);
-    for (unsigned int idx = 0; idx < mRam.size(); ++idx) {
-        unsigned int id = mRam[idx].id;
+
+    for (auto it : mRam) {
+        unsigned int id = (*it.second)->id;
         currentIds.insert(id);
-        idToIndex[id] = idx;
+        idToIndex[id] = it.first;
     }
 
     // Filter queue: keep only ids that are still in RAM
@@ -63,8 +64,8 @@ std::vector<unsigned int> Fifo::execute(unsigned int pages)
     for (unsigned int id : mQueue) mSet.insert(id);
 
     // Append any pages in mRam that are not yet in the queue
-    for (const Page &p : mRam) {
-        unsigned int id = p.id;
+    for (const auto it : mRam) {
+        unsigned int id = (*it.second)->id;
         if (mSet.find(id) == mSet.end()) {
             mQueue.push_back(id);
             mSet.insert(id);

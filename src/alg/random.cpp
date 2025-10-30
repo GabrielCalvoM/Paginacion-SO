@@ -6,7 +6,7 @@
 #include <chrono>
 
 // RANDOM BUILDER
-Random::Random(std::vector<Page> &ram, unsigned int seed) : IAlgorithm(ram) {
+Random::Random(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram, unsigned int seed) : IAlgorithm(ram) {
     // random seed if not provided
     if (seed == 0) {
         mRng.seed(static_cast<unsigned int>(
@@ -25,9 +25,9 @@ std::vector<unsigned int> Random::execute(unsigned int pages)
     if (pages == 0 || mRam.empty()) return evicted;
 
     // Define array
-    std::vector<unsigned int> roulette(mRam.size());
-    for (unsigned int i = 0; i < mRam.size(); ++i)
-        roulette[i] = i;
+    std::vector<unsigned int> roulette;
+    for (auto i : mRam)
+        roulette.push_back(i.first);
 
     // Choose random and select the first in range [0, pages]
     std::shuffle(roulette.begin(), roulette.end(), mRng);

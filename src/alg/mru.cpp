@@ -7,7 +7,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 // Constructor
-Mru::Mru(std::vector<Page> &ram) : IAlgorithm(ram) {}
+Mru::Mru(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram) : IAlgorithm(ram) {}
 
 ////////////////////////////////////////////////////////////////////////
 // AUX MRU UPDATE - place a page to the front
@@ -61,10 +61,10 @@ std::vector<unsigned int> Mru::execute(unsigned int pages) {
     std::unordered_map<unsigned int, unsigned int> idToIndex;
     idToIndex.reserve(mRam.size() * 2);
 
-    for (unsigned int idx = 0; idx < mRam.size(); ++idx) {
-        unsigned int id = mRam[idx].id;
+    for (auto it : mRam) {
+        unsigned int id = (*it.second)->id;
         currentIds.insert(id);
-        idToIndex[id] = idx;
+        idToIndex[id] = it.first;
     }
 
     // Filter Queue to keep only RAM
@@ -80,8 +80,8 @@ std::vector<unsigned int> Mru::execute(unsigned int pages) {
     // Rebuild Set
     mSet.clear();
     mSet.reserve(mQueue.size() * 2);
-    for (const Page &p : mRam) {
-        unsigned int id = p.id;
+    for (const auto &it : mRam) {
+        unsigned int id = (*it.second)->id;
         if (mSet.find(id) == mSet.end()) {
             mQueue.push_back(id);
             mSet.insert(id);

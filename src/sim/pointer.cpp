@@ -3,21 +3,20 @@
 // Constructor
 Pointer::Pointer(unsigned int &idCount) : id(++idCount) {}
 
-// --- Getters ---
-std::vector<Page>& Pointer::getPages() { 
-    return mPages; 
-}
+// Destructor
+Pointer::~Pointer() { mPages.clear(); }
 
-const std::vector<Page>& Pointer::getPages() const { 
+// --- Getters ---
+std::vector<std::unique_ptr<Page>>& Pointer::getPages() const { 
     return mPages; 
 }
 
 // --- Setters ---
-void Pointer::assignPages(int num, int size, unsigned int &idCount) { 
+void Pointer::assignPages(int size, unsigned int &idCount) { 
     while (size >= 4096) {
-        mPages.push_back(Page(4096, idCount));
+        mPages.push_back(std::make_unique<Page>(4096, idCount));
         size -= 4096;
     }
     
-    mPages.push_back(Page(size, idCount));
+    mPages.push_back(std::make_unique<Page>(4096, idCount));
 }

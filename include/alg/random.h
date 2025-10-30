@@ -2,6 +2,7 @@
 #define RANDOM_H
 
 #include <vector>
+#include <vector>
 #include <queue>
 #include <random>
 
@@ -13,7 +14,7 @@ private:
     // mersenne twister thing
     std::mt19937 mRng;
 public:
-    Random(std::vector<Page>&, unsigned int seed = 0);
+    Random(std::unordered_map<unsigned int, std::unique_ptr<Page>*>&, unsigned int seed = 0);
     std::vector<unsigned int> execute(unsigned int pages) override;
     
 };

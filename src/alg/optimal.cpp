@@ -9,7 +9,7 @@
 
 
 // Constructor
-Optimal::Optimal(std::vector<Page>& mRam, const std::vector<unsigned int>& accessSequence)
+Optimal::Optimal(std::unordered_map<unsigned int, std::unique_ptr<Page>*>& mRam, const std::vector<unsigned int>& accessSequence)
     : IAlgorithm(mRam), mAccessSequence(accessSequence), mCurIndex(0)
 {
     // Ocurrence Map Build
@@ -27,6 +27,15 @@ void Optimal::optForesee(unsigned int pageId)
     }
 }
 
+void Optimal::onAccess(unsigned int pageId) {
+    optForesee(pageId);
+}
+
+void Optimal::onInsert(unsigned int pageId, unsigned int idx) {
+    optForesee(pageId);
+}
+
+
 // Execution: evict using Belady (farthest next use or never)
 std::vector<unsigned int> Optimal::execute(unsigned int pages) 
 {
@@ -37,8 +46,8 @@ std::vector<unsigned int> Optimal::execute(unsigned int pages)
 
     // track Frames
     std::vector<unsigned int> frames;
-    for (unsigned int i = 0; i < mRam.size(); ++i) {
-        frames.push_back(i);
+    for (auto it : mRam) {
+        frames.push_back(it.first);
     }
 
     // Scan access sequence
@@ -48,7 +57,7 @@ std::vector<unsigned int> Optimal::execute(unsigned int pages)
         // Remove frames when their page is found
         for (size_t j = 0; j < frames.size(); ++j) {
             unsigned int f = frames[j];
-            if (mRam[f].id == futurePageId) {
+            if ((*mRam[f])->id == futurePageId) {
                 frames.erase(frames.begin() + j);
                 break;  // Only remove first match
             }

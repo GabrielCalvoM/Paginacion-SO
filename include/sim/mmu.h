@@ -22,10 +22,10 @@ private:
     std::unordered_map<unsigned int, Pointer> mSimbolTable;
     std::unordered_map<unsigned int, unsigned int> mPageMap;
     std::unordered_map<unsigned int, unsigned int> mPtrMap;
-
-    std::vector<Page> mPageLoadedTime;
-    std::vector<Page> mRam;
-    std::vector<Page> mDisk;
+    
+    std::vector<std::unique_ptr<Page>*> mPageLoadedTime;
+    std::unordered_map<unsigned int, std::unique_ptr<Page>*> mRam;
+    std::unordered_map<unsigned int, std::unique_ptr<Page>*> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
     std::set<unsigned int> mPagesCreated;
@@ -43,8 +43,10 @@ private:
     unsigned int ptrIdCount = 0;
     unsigned int pageIdCount = 0;
 
-    void insertPageOnDisk(Page &);
-    void insertPageOnRam(Page &);
+    bool insertPageOnDisk(std::unique_ptr<Page>&, unsigned int index);
+    bool insertPageOnRam(std::unique_ptr<Page>&, unsigned int);
+    unsigned int ramAddress();
+    unsigned int diskAddress();
     
 public:
     static const unsigned int ramSize = Consts::MAX_RAM; // 400 KB
@@ -53,29 +55,29 @@ public:
     ~MemoryManagementUnit();
 
     // --- Getters ---
-    const std::vector<Page> &ram() const { return mRam; }
-    const std::vector<Page> &disk() const { return mDisk; }
-    const std::vector<Page*> pagesCreated() const {
-        std::vector <Page*> vec;
-        for (auto p : mRam) if (mPagesCreated.find(p.id) == mPagesCreated.end()) vec.push_back(&p);
-        for (auto p : mDisk) if (mPagesCreated.find(p.id) == mPagesCreated.end()) vec.push_back(&p);
+    const std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram() const { return mRam; }
+    const std::unordered_map<unsigned int, std::unique_ptr<Page>*> &disk() const { return mDisk; }
+    const std::vector<std::unique_ptr<Page>*> pagesCreated() const {
+        std::vector<std::unique_ptr<Page>*> vec;
+        for (auto p : mRam) if (mPagesCreated.find((*p.second)->id) == mPagesCreated.end()) vec.push_back(p.second);
+        for (auto p : mDisk) if (mPagesCreated.find((*p.second)->id) == mPagesCreated.end()) vec.push_back(p.second);
         return vec;
     }
-    const std::vector<Page*> pagesModified() const {
-        std::vector <Page*> vec;
-        for (auto p : mRam) vec.push_back(&p);
-        for (auto p : mDisk) if (mPagesModified.find(p.id) == mPagesModified.end()) vec.push_back(&p);
+    const std::vector<std::unique_ptr<Page>*> pagesModified() const {
+        std::vector <std::unique_ptr<Page>*> vec;
+        for (auto p : mRam) vec.push_back(p.second);
+        for (auto p : mDisk) if (mPagesModified.find((*p.second)->id) == mPagesModified.end()) vec.push_back(p.second);
         return vec;
     }
     const std::vector<unsigned int> &pagesDeleted() const { return mPagesDeleted; }
     const unsigned int getPageId(unsigned int id) const { return mPtrMap.at(mPageMap.at(id)); }
     const unsigned int getProcesses() const { return mProcessList.size(); }
     const unsigned int getRamSize() const {
-        int size = 0; for (const auto p : mRam) size += p.getSpace();
+        int size = 0; for (const auto &p : mRam) size += (*p.second)->getSpace();
         return size;
     }
     const unsigned int getDiskSize() const {
-        int size = 0; for (const auto p : mDisk) size += p.getSpace();
+        int size = 0; for (const auto &p : mDisk) size += (*p.second)->getSpace();
         return size;
     }
     const unsigned int getLoadedPages() const { return mRam.size(); }

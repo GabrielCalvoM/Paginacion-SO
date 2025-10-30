@@ -1,12 +1,13 @@
 #include "alg/second_chance.h"
 
+#include <set>
 #include <vector>
 #include <iostream>
 
 // Maintains a hand (index) into mRam and gives a "second chance" to pages
 // that have their second-chance bit set.
 
-SecondChance::SecondChance(std::vector<Page> &ram) : IAlgorithm(ram), mHand(0) {}
+SecondChance::SecondChance(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram) : IAlgorithm(ram), mHand(0) {}
 
 std::vector<unsigned int> SecondChance::execute(unsigned int pages)
 {
@@ -17,15 +18,18 @@ std::vector<unsigned int> SecondChance::execute(unsigned int pages)
 
     // Ensure hand is in range
     if (mHand >= frameCount) mHand = 0;
+    std::set<unsigned int> pgIdxs;
+    for (auto it : mRam) pgIdxs.insert(it.first);
+    auto it = pgIdxs.begin();
 
     // Loop until we collected required number of frames to evict
     while (evicted.size() < need && frameCount > 0) {
-        if (mHand >= mRam.size()) mHand = 0;
-        Page &pg = mRam[mHand];
+        if (mHand >= mRam.size()) { mHand = 0; it = pgIdxs.begin(); }
+        auto &pg = mRam[*(it++)];
 
-        if (pg.hasSecondChance()) {
+        if ((*pg)->hasSecondChance()) {
             // second chance clear the bit and advance
-            pg.setSecondChance(false);
+            (*pg)->setSecondChance(false);
             mHand = (mHand + 1) % frameCount;
             continue;
         }
