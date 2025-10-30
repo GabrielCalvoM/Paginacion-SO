@@ -15,7 +15,7 @@ private:
     bool mSecondChance = 0;
 
 public:
-    static unsigned int pageSize = Consts::PAGE_SIZE; // 4 KB
+    static unsigned int pageSize = 4096; // 4 KB
     const unsigned int id;
 
     Page(int space, unsigned int &idCount);
