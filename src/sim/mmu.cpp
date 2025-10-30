@@ -231,7 +231,8 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
             // move extra to frame (replace the evicted slot)
             Page &frame = mRam[idx];
-            frame = newPages[placedPages]; // copy incoming page into frame
+            frame.~Page();
+            new (&frame) Page(newPages[placedPages])
             frame.setInRealMem(true);
             frame.setPhysicalDir(idx);
 
@@ -273,7 +274,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) { printf("\n [EXE: use] - NULL PTR \n"); return; }
-    printf("\n [EXE: use] - Ptr %u \n", it->id);
+    printf("\n [EXE: use] - Ptr %u \n", ptrId);
 
     std::vector<Page> &pages = it->second.getPages();
     for (unsigned int i = 0; i < pages.size(); ++i) {
@@ -322,15 +323,14 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 
     // Notify algorithm of eviction (resident page)
     unsigned int evictedId = mRam[idx].id;
-    //if (mAlgorithm) mAlgorithm->onEvict(evictedId, ridx);
 
     // move evicted page to DISK (copy then remove slot)
-    Page ev = mRam[ridx];
+    Page ev = mRam[idx];
     ev.setInRealMem(false);
     ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
     mDisk.push_back(ev);
     // remove from RAM vector
-    mRam.erase(mRam.begin() + ridx);
+    mRam.erase(mRam.begin() + idx);
     printf("\n [EXE: use] - Moving page to DISK %u at %u\n", ev.id, ev.getPhysicalDir());
 
     // colocar la página en RAM (as a new slot at the end)
@@ -361,7 +361,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
     if (it == mSimbolTable.end()) return;
 
     Pointer &ptr = it->second;
-    printf("\n [EXE: del] - Ptr %u \n", ptr->id);
+    printf("\n [EXE: del] - Ptr %u \n", ptrId);
     std::vector<Page> pages = ptr.getPages(); //copia de las paginas
 
     //recolectar indices en RAM y DISK
