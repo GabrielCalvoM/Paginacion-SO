@@ -172,7 +172,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 {
     // BOOL FAULT
     bool fault = 0;
-    Page* pg = NULL;
+    Page* pg = nullptr;
 
     // Compute Pages
     unsigned int pages = size / Page::pageSize;
@@ -188,21 +188,22 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
     // Fill Pages in RAM
     unsigned int placedPages = 0;
-    while (placedPages < pages && mRam.size() < 100) {    
+    while (placedPages < pages && mRam.size() < 100) {
         pg = &newPages[placedPages];
-        pg.setInRealMem(true);
-        pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-        mRam.push_back(pg);
+        pg->setInRealMem(true);
+        pg->setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+        // push a copy of the page into RAM
+        mRam.push_back(*pg);
 
         // Notify algorithm of insertion
-        if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
+        if (mAlgorithm) mAlgorithm->onInsert(pg->id, static_cast<unsigned int>(mRam.size()-1));
 
         ++placedPages;
 
         // consume Time
-        printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n", 
-                pg.id, placedPages, pages, pg.getPhysicalDir());
-        addTime(false); 
+        printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n",
+                pg->id, placedPages, pages, pg->getPhysicalDir());
+        addTime(false);
     }
 
     // Fill Extra in DISK FAULT
@@ -215,7 +216,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
 
         std::vector<unsigned int> evicted = mAlgorithm->execute(mRam, remaining);
 
-        for (unsigned int idx : evictIndex) {
+        for (unsigned int idx : evicted) {
             if (placedPages >= pages) break; // FINISH
             if (idx >= mRam.size()) continue; // GUARD
 
@@ -225,18 +226,19 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
             ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
             mDisk.push_back(ev);
 
-            printf("\n [EXE: new] - Moving page to DISK %u (%u/%u) at %u\n", 
-                pg.id, remaining--, evicted.size(), pg.getPhysicalDir());
+            printf("\n [EXE: new] - Moving page to DISK %u (%u/%u) at %u\n",
+                ev.id, remaining--, evicted.size(), ev.getPhysicalDir());
 
-            // move extra to frame
-            pg = &mRam[idx];
-            pg.setInRealMem(true);
-            pg.setPhysicalDir(idx);
-            
+            // move extra to frame (replace the evicted slot)
+            Page &frame = mRam[idx];
+            frame = newPages[placedPages]; // copy incoming page into frame
+            frame.setInRealMem(true);
+            frame.setPhysicalDir(idx);
+
             ++placedPages;
 
-            printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n", 
-                pg.id, placedPages, pages, pg.getPhysicalDir());
+            printf("\n [EXE: new] - Placing direct RAM page %u (%u/%u) at %u\n",
+                frame.id, placedPages, pages, frame.getPhysicalDir());
         }
     }
 
@@ -267,41 +269,39 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 {
     // VARS
     bool fault = 0;
-    Page &pg = NULL;
-    std::vector<Page>* pages;
+    Page* pg = nullptr;
 
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) { printf("\n [EXE: use] - NULL PTR \n"); return; }
     printf("\n [EXE: use] - Ptr %u \n", it->id);
 
-    pages = it->second.getPages();
+    std::vector<Page> &pages = it->second.getPages();
     for (unsigned int i = 0; i < pages.size(); ++i) {
         pg = &pages[i];
 
         // si ya esta en RAM -> mark access for algorithms that need it
-        if (pg.isInRealMem()) { 
-            printf("\n [EXE: use] - Page Hit ID = %u  \n", pg.id);
+        if (pg->isInRealMem()) {
+            printf("\n [EXE: use] - Page Hit ID = %u  \n", pg->id);
 
             // mark second chance bit
-            pg.setSecondChance(true);
+            pg->setSecondChance(true);
 
-            
-            // if (mAlgorithm) mAlgorithm->onAccess(pg.id);
-            continue; 
+            // if (mAlgorithm) mAlgorithm->onAccess(pg->id);
+            continue;
         }
 
         //si hay espacio libre en RAM, colocar al final
         if (mRam.size() < 100) {
-            printf("\n [EXE: use] - Page Fault ID = %u  (but Available RAM) \n", pg.id);
-            
-            fault = true;
-            pg.setInRealMem(true);
-            //pg.setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-            mRam.push_back(pg); // copia actualizada a RAM
+            printf("\n [EXE: use] - Page Fault ID = %u  (but Available RAM) \n", pg->id);
 
-            printf("\n [EXE: use] - Moving page to RAM %u at %u\n", pg.id, pg.getPhysicalDir());
+            fault = true;
+            pg->setInRealMem(true);
+            //pg->setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+            mRam.push_back(*pg); // copia actualizada a RAM
+
+            printf("\n [EXE: use] - Moving page to RAM %u at %u\n", pg->id, pg->getPhysicalDir());
             // notify algorithm of insert
-            // if (mAlgorithm) mAlgorithm->onInsert(pg.id, static_cast<unsigned int>(mRam.size()-1));
+            // if (mAlgorithm) mAlgorithm->onInsert(pg->id, static_cast<unsigned int>(mRam.size()-1));
             continue;
         }
 
@@ -311,28 +311,33 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
         //     mAlgorithm->optForesee(pg.id); // consumir ocurrencia
         // }
 
-        // NOT ENOUGH RAM SPACE
-        fault = true;
-        printf("\n [EXE: use] - Page Fault ID = %u \n", pg.id);
-        std::vector<unsigned int> evicted = mAlgorithm->execute(mRam, 1);
-        if (evicted.empty()) {  printf("\n [EXE: use] - WARNING: Empty Evicted");  continue; } // guard
-        
-        // Notify algorithm of eviction
-        // unsigned int evictedPageId = mRam[idx].id;
-        // if (mAlgorithm) mAlgorithm->onEvict(evictedPageId, idx);
+    // NOT ENOUGH RAM SPACE
+    fault = true;
+    printf("\n [EXE: use] - Page Fault ID = %u \n", pg->id);
+    std::vector<unsigned int> evicted = mAlgorithm->execute(mRam, 1);
+    if (evicted.empty()) {  printf("\n [EXE: use] - WARNING: Empty Evicted");  continue; } // guard
 
-        //move evicted page to DISK
-        Page ev = mRam.pop(evicted[0]);
-        ev.setInRealMem(false);
-        // ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
-        mDisk.push_back(ev);
-        printf("\n [EXE: use] - Moving page to DISK %u at %u\n", ev.id, ev.getPhysicalDir()); 
+    unsigned int idx = evicted[0];
+    if (idx >= mRam.size()) continue;
 
-        //colocar la página en RAM
-        pg.setInRealMem(true);
-        // pg.setPhysicalDir(idx);
-        mRam.push_back(pg);
-        printf("\n [EXE: use] - Moving page to RAM %u at %u\n", pg.id, pg.getPhysicalDir());
+    // Notify algorithm of eviction (resident page)
+    unsigned int evictedId = mRam[idx].id;
+    //if (mAlgorithm) mAlgorithm->onEvict(evictedId, ridx);
+
+    // move evicted page to DISK (copy then remove slot)
+    Page ev = mRam[ridx];
+    ev.setInRealMem(false);
+    ev.setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
+    mDisk.push_back(ev);
+    // remove from RAM vector
+    mRam.erase(mRam.begin() + ridx);
+    printf("\n [EXE: use] - Moving page to DISK %u at %u\n", ev.id, ev.getPhysicalDir());
+
+    // colocar la página en RAM (as a new slot at the end)
+    pg->setInRealMem(true);
+    pg->setPhysicalDir(static_cast<unsigned int>(mRam.size()));
+    mRam.push_back(*pg);
+    printf("\n [EXE: use] - Moving page to RAM %u at %u\n", pg->id, pg->getPhysicalDir());
 
         //actualizar la página en la tabla de simbolos para reflejar que ahora esta en RAM
         
