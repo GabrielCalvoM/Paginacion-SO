@@ -9,11 +9,12 @@
 Random::Random(std::vector<Page> &ram, unsigned int seed) : IAlgorithm(ram) {
     // random seed if not provided
     if (seed == 0) {
-        mRng.seed( 
-            static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count())
-        );
+        mRng.seed(static_cast<unsigned int>(
+        std::chrono::high_resolution_clock::now().time_since_epoch().count()
+       ));
+    } else {
+        mRng.seed(seed);
     }
-    mRng.seed(seed);
 }
 
 // EXECUTION
@@ -30,9 +31,12 @@ std::vector<unsigned int> Random::execute(unsigned int pages)
 
     // Choose random and select the first in range [0, pages]
     std::shuffle(roulette.begin(), roulette.end(), mRng);
-    evicted.insert(evicted.end(), roulette.end(), roulette.begin() + pages);
+    // clamp pages to roulette size to avoid out-of-range
+    if (pages > roulette.size()) pages = static_cast<unsigned int>(roulette.size());
+    // correct range: begin -> begin + pages
+    evicted.insert(evicted.end(), roulette.begin(), roulette.begin() + pages);
 
-    std::cout << "\n [FIFO]-Evicting: ";
+    std::cout << "\n [RND]-Evicting: ";
     for (unsigned int idx : evicted) std::cout << idx << " ";
     std::cout << "\n";
 
