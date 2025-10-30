@@ -2,7 +2,13 @@
 
 #include "constants.h"
 #include <gtkmm/main.h>
+#include <gtkmm/cellrenderertext.h>
+#include <gdkmm/rgba.h>
+#include <algorithm>
+#include <cmath>
 #include <iomanip>
+#include <string>
+#include <vector>
 
 namespace {
     class MMUColumns : public Gtk::TreeModel::ColumnRecord {
@@ -37,12 +43,54 @@ namespace {
     };
     const InfoColumns InfoColumns::columns;
 
+    static void hsvToRgb(double h, double s, double v, double &r, double &g, double &b) {
+        if (s <= 0.0) {
+            r = g = b = v;
+            return;
+        }
+
+        h = std::fmod(h, 1.0);
+        if (h < 0.0) h += 1.0;
+        double sector = h * 6.0;
+        int i = static_cast<int>(std::floor(sector));
+        double f = sector - i;
+        double p = v * (1.0 - s);
+        double q = v * (1.0 - s * f);
+        double t = v * (1.0 - s * (1.0 - f));
+
+        switch (i % 6) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            case 5: default: r = v; g = p; b = q; break;
+        }
+    }
+
+    // Deterministic palette: each PID maps to a unique HSV tuple.
+    Gdk::RGBA pidToColor(unsigned int pid) {
+        Gdk::RGBA color;
+        if (pid == 0) {
+            color.set_rgba(0.96, 0.96, 0.96, 1.0);
+            return color;
+        }
+
+        // Spread hues using the golden ratio to avoid clustering.
+        constexpr double goldenConjugate = 0.61803398875;
+        double hue = std::fmod(static_cast<double>(pid) * goldenConjugate, 1.0);
+        double saturation = 0.55 + 0.25 * std::fmod(static_cast<double>((pid * 37) % 100) / 100.0, 1.0);
+        double value = 0.85 + 0.10 * std::fmod(static_cast<double>((pid * 53) % 100) / 100.0, 1.0);
+
+        double r, g, b;
+        hsvToRgb(hue, std::min(saturation, 0.9), std::min(value, 0.98), r, g, b);
+        color.set_rgba(r, g, b, 1.0);
+        return color;
+    }
 }
 
-static void setRendererText(Gtk::TreeViewColumn *column);
-static void setRendererText(Gtk::TreeViewColumn *column, std::function<std::string(Gtk::TreeRow&)> transform);
-
-// Constructor
+static void setRendererText(Gtk::TreeViewColumn *column, bool colorByPid = false);
+static void setRendererText(Gtk::TreeViewColumn *column, std::function<std::string(Gtk::TreeRow&)> transform, bool colorByPid = false);
 GtkSimView::GtkSimView() {}
 
 // Destructor
@@ -63,53 +111,83 @@ void GtkSimView::setMMU(Glib::RefPtr<Gtk::ListStore> model, const std::vector<MM
         row[MMUColumns::columns.loadedTime] = p.loadedTime;
         row[MMUColumns::columns.mark] = p.mark;
     }
-    //for (const auto p : mmu) {
-    //    if (p.action == PageAction::createP) addPage(model, p);
-    //    if (p.action == PageAction::modifyP) uptPage(model, p);
-    //    if (p.action == PageAction::deleteP) delPage(model, p);
-    //}
 }
 
-void GtkSimView::addPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
-    auto row = *model->append();
-        
-    row[MMUColumns::columns.id] = page.id;
-    row[MMUColumns::columns.pid] = page.pid;
-    row[MMUColumns::columns.loaded] = page.loaded;
-    row[MMUColumns::columns.lAddr] = page.lAddr;
-    row[MMUColumns::columns.mAddr] = page.mAddr;
-    row[MMUColumns::columns.dAddr] = page.dAddr;
-    row[MMUColumns::columns.loadedTime] = page.loadedTime;
-    row[MMUColumns::columns.mark] = page.mark;
+void GtkSimView::setOptMMU(const std::vector<MMUModel> mmu) const {
+    setMMU(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mOptMmu->get_model()), mmu);
+    updateRamBar(mRamOptBar,
+                 const_cast<std::vector<Gdk::RGBA>&>(mRamOptColors),
+                 const_cast<std::vector<Glib::ustring>&>(mRamOptLabels),
+                 mmu);
 }
 
-void GtkSimView::uptPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
-    auto it = *model->get_iter("0");
-    while ((*it)[MMUColumns::columns.id] != page.id) {
-        ++it;
-        if (it == model->children().end()) {
-            addPage(model, page);
-            return;
+void GtkSimView::setAlgMMU(const std::vector<MMUModel> mmu) const {
+    setMMU(Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mAlgMmu->get_model()), mmu);
+    updateRamBar(mRamAlgBar,
+                 const_cast<std::vector<Gdk::RGBA>&>(mRamAlgColors),
+                 const_cast<std::vector<Glib::ustring>&>(mRamAlgLabels),
+                 mmu);
+}
+
+bool GtkSimView::onRamDraw(const Cairo::RefPtr<Cairo::Context> &cr,
+                           const std::vector<Gdk::RGBA> &colors,
+                           const std::vector<Glib::ustring> &labels,
+                           Gtk::DrawingArea *area) const {
+    if (!area) return false;
+
+    const double width = area->get_allocated_width();
+    const double height = area->get_allocated_height();
+    if (width <= 0.0 || height <= 0.0) return false;
+
+    const unsigned int totalFrames = colors.size();
+    if (totalFrames == 0) return false;
+
+    const double barHeight = height;
+    const double barWidth = width;
+
+    const double padding = 4.0;
+    const double innerHeight = barHeight - padding * 2.0;
+    const double innerWidth = barWidth - padding * 2.0;
+    if (innerHeight <= 0.0 || innerWidth <= 0.0) return false;
+    const double frameWidth = innerWidth / static_cast<double>(totalFrames);
+
+    // Draw background border
+    cr->set_source_rgb(0.85, 0.85, 0.85);
+    cr->rectangle(0.0, 0.0, barWidth, barHeight);
+    cr->fill();
+
+    cr->set_source_rgb(0.2, 0.2, 0.2);
+    cr->set_line_width(1.0);
+    cr->rectangle(0.5, 0.5, barWidth - 1.0, barHeight - 1.0);
+    cr->stroke();
+
+    // Draw frames as segments from left to right
+    for (unsigned int i = 0; i < totalFrames; ++i) {
+        const double x = padding + i * frameWidth;
+        const double y = padding;
+
+        const Gdk::RGBA &color = colors[i];
+    const double segmentWidth = std::max(frameWidth, 1.0);
+    cr->set_source_rgba(color.get_red(), color.get_green(), color.get_blue(), 1.0);
+    cr->rectangle(x, y, segmentWidth, innerHeight);
+        cr->fill();
+
+        // Draw optional PID label when there's room
+        const Glib::ustring &label = labels[i];
+        if (!label.empty() && segmentWidth >= 12.0) {
+            cr->set_source_rgb(0.1, 0.1, 0.1);
+            Cairo::TextExtents extents;
+            cr->select_font_face("Sans", Cairo::FONT_SLANT_NORMAL, Cairo::FONT_WEIGHT_NORMAL);
+            cr->set_font_size(std::min(innerHeight - 4.0, segmentWidth - 2.0));
+            cr->get_text_extents(label, extents);
+            const double textX = x + (segmentWidth - extents.width) * 0.5 - extents.x_bearing;
+            const double textY = y + innerHeight * 0.5 + extents.height * 0.5 - extents.y_bearing;
+            cr->move_to(textX, textY);
+            cr->show_text(label);
         }
     }
 
-    auto row = *it;
-
-    row[MMUColumns::columns.loaded] = page.loaded;
-    row[MMUColumns::columns.lAddr] = page.lAddr;
-    row[MMUColumns::columns.mAddr] = page.mAddr;
-    row[MMUColumns::columns.dAddr] = page.dAddr;
-    row[MMUColumns::columns.loadedTime] = page.loadedTime;
-    row[MMUColumns::columns.mark] = page.mark;
-}
-
-void GtkSimView::delPage(Glib::RefPtr<Gtk::ListStore> model, const MMUModel page) const {
-    auto it = *model->get_iter("0");
-    while ((*it)[MMUColumns::columns.id] != page.id) {
-        ++it;
-        if (it == model->children().end()) return;
-    }
-    model->erase(it);
+    return true;
 }
 
 void GtkSimView::setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel info) const {
@@ -124,11 +202,38 @@ void GtkSimView::setInfo(Glib::RefPtr<Gtk::ListStore> model, const InfoModel inf
     row[InfoColumns::columns.fragmentation] = info.fragmentation;
 }
 
+void GtkSimView::updateRamBar(Gtk::DrawingArea *area,
+                              std::vector<Gdk::RGBA> &colors,
+                              std::vector<Glib::ustring> &labels,
+                              const std::vector<MMUModel> &mmu) const {
+    if (!area) return;
+
+    const unsigned int kTotalFrames = Consts::MAX_RAM / Consts::PAGE_SIZE;
+    if (colors.size() != kTotalFrames) colors.assign(kTotalFrames, pidToColor(0));
+    if (labels.size() != kTotalFrames) labels.assign(kTotalFrames, Glib::ustring(""));
+
+    std::fill(colors.begin(), colors.end(), pidToColor(0));
+    std::fill(labels.begin(), labels.end(), Glib::ustring(""));
+
+    for (const auto &entry : mmu) {
+        if (!entry.loaded || entry.mAddr == 0) continue;
+        unsigned int idx = entry.mAddr - 1;
+        if (idx >= kTotalFrames) continue;
+        colors[idx] = pidToColor(entry.pid);
+        labels[idx] = entry.pid == 0 ? Glib::ustring("") : Glib::ustring(std::to_string(entry.pid));
+    }
+
+    area->queue_draw();
+}
+
 void GtkSimView::initialize() {
     mBuilder->get_widget("RalentizationScale", mRalenScale);
 
     mBuilder->get_widget("MmuAlgView", mAlgMmu);
     mBuilder->get_widget("MmuOptView", mOptMmu);
+
+    mBuilder->get_widget("RamAlgView", mRamAlgBar);
+    mBuilder->get_widget("RamOptView", mRamOptBar);
 
     mBuilder->get_widget("ProcessTimeAlgView", mAlgMain);
     mBuilder->get_widget("ProcessTimeOptView", mOptMain);
@@ -141,6 +246,27 @@ void GtkSimView::initialize() {
     mBuilder->get_widget("FragmentationAlgView", mAlgFragmentation);
     mBuilder->get_widget("FragmentationOptView", mOptFragmentation);
 
+    auto setupRamArea = [&](Gtk::DrawingArea *area,
+                            std::vector<Gdk::RGBA> &colors,
+                            std::vector<Glib::ustring> &labels) {
+        if (!area) return;
+        colors.assign(Consts::MAX_RAM / Consts::PAGE_SIZE, pidToColor(0));
+        labels.assign(colors.size(), Glib::ustring(""));
+
+        area->set_size_request(-1, 60);
+        area->set_hexpand(true);
+        area->set_vexpand(false);
+
+        area->signal_draw().connect([=, &colors, &labels](const Cairo::RefPtr<Cairo::Context> &cr) {
+            return onRamDraw(cr, colors, labels, area);
+        });
+
+        area->queue_draw();
+    };
+
+    setupRamArea(mRamOptBar, mRamOptColors, mRamOptLabels);
+    setupRamArea(mRamAlgBar, mRamAlgColors, mRamAlgLabels);
+
     mBuilder->get_widget("ResetButton", mReset);
     mBuilder->get_widget("PlayButton", mPlay);
     mBuilder->get_widget("PauseButton", mPause);
@@ -151,28 +277,27 @@ void GtkSimView::initialize() {
         return out.str();
     };
 
-    auto simMmuCellRender = [=](Gtk::TreeView *tree, Glib::RefPtr<Gtk::ListStore> model) {
-        setRendererText(tree->get_column(0));
-        setRendererText(tree->get_column(1));
-        setRendererText(tree->get_column(2), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.loaded] ? "X" : ""; });
-        setRendererText(tree->get_column(3));
+    auto simMmuCellRender = [=](Gtk::TreeView *tree) {
+        setRendererText(tree->get_column(0), true);
+        setRendererText(tree->get_column(1), true);
+        setRendererText(tree->get_column(2), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.loaded] ? "X" : ""; }, true);
+        setRendererText(tree->get_column(3), true);
         setRendererText(tree->get_column(4), [=](Gtk::TreeRow &row)
             { return row[MMUColumns::columns.mAddr] > 0 ?
-                std::to_string(row[MMUColumns::columns.mAddr]) : ""; });
+                std::to_string(row[MMUColumns::columns.mAddr]) : ""; }, true);
         setRendererText(tree->get_column(5), [=](Gtk::TreeRow &row)
             { return row[MMUColumns::columns.dAddr] > 0 ?
-                std::to_string(row[MMUColumns::columns.dAddr]) : ""; });
+                std::to_string(row[MMUColumns::columns.dAddr]) : ""; }, true);
         setRendererText(tree->get_column(6), [=](Gtk::TreeRow &row)
-            { unsigned int totalTime = (*model->get_iter("0"))[InfoColumns::columns.time];
-                return row[MMUColumns::columns.mAddr] > 0 ?
-                std::to_string(row[MMUColumns::columns.loadedTime]) + "s" : ""; });
-        setRendererText(tree->get_column(7), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mark] ? "X" : ""; });
+            { return row[MMUColumns::columns.mAddr] > 0 ?
+                std::to_string(row[MMUColumns::columns.loadedTime]) + "s" : ""; }, true);
+        setRendererText(tree->get_column(7), [=](Gtk::TreeRow &row) { return row[MMUColumns::columns.mark] ? "X" : ""; }, true);
         Glib::RefPtr<Gtk::ListStore>::cast_dynamic(tree->get_model())
             ->set_sort_column(MMUColumns::columns.id, Gtk::SORT_ASCENDING);
     };
 
-    simMmuCellRender(mAlgMmu, Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mAlgMain->get_model()));
-    simMmuCellRender(mOptMmu, Glib::RefPtr<Gtk::ListStore>::cast_dynamic(mOptMain->get_model()));
+    simMmuCellRender(mAlgMmu);
+    simMmuCellRender(mOptMmu);
     
     auto simTimeCellRender = [=](Gtk::TreeView *tree) {
         setRendererText(tree->get_column(0));
@@ -288,25 +413,47 @@ void GtkSimView::resetState() const {
     showState();
 }
 
-static void setRendererText(Gtk::TreeViewColumn *column) {
+static void setRendererText(Gtk::TreeViewColumn *column, bool colorByPid) {
     column->set_alignment(0.5);
-    column->set_cell_data_func(*column->get_first_cell(), [=](Gtk::CellRenderer* cell, const Gtk::TreeModel::iterator& iter) {
+    column->set_cell_data_func(*column->get_first_cell(), [=](Gtk::CellRenderer *cell, const Gtk::TreeModel::iterator &iter) {
         auto row = *iter;
-        auto renderer_text = dynamic_cast<Gtk::CellRendererText*>(cell);
-        if (renderer_text) {
-            renderer_text->property_xalign() = 0.5;
+        auto renderer_text = dynamic_cast<Gtk::CellRendererText *>(cell);
+        if (!renderer_text) return;
+
+        renderer_text->property_xalign() = 0.5;
+
+        if (colorByPid) {
+            const auto color = pidToColor(row[MMUColumns::columns.pid]);
+            renderer_text->property_cell_background_rgba() = color;
+            renderer_text->property_cell_background_set() = true;
+            renderer_text->property_foreground() = "#000000";
+            renderer_text->property_foreground_set() = true;
+        } else {
+            renderer_text->property_cell_background_set() = false;
+            renderer_text->property_foreground_set() = false;
         }
     });
 }
 
-static void setRendererText(Gtk::TreeViewColumn *column, std::function<std::string(Gtk::TreeRow&)> transform) {
+static void setRendererText(Gtk::TreeViewColumn *column, std::function<std::string(Gtk::TreeRow &)> transform, bool colorByPid) {
     column->set_alignment(0.5);
-    column->set_cell_data_func(*column->get_first_cell(), [=](Gtk::CellRenderer* cell, const Gtk::TreeModel::iterator& iter) {
+    column->set_cell_data_func(*column->get_first_cell(), [=](Gtk::CellRenderer *cell, const Gtk::TreeModel::iterator &iter) {
         auto row = *iter;
-        auto renderer_text = dynamic_cast<Gtk::CellRendererText*>(cell);
-        if (renderer_text) {
-            renderer_text->property_text() = transform(row);
-            renderer_text->property_xalign() = 0.5;
+        auto renderer_text = dynamic_cast<Gtk::CellRendererText *>(cell);
+        if (!renderer_text) return;
+
+        renderer_text->property_text() = transform(row);
+        renderer_text->property_xalign() = 0.5;
+
+        if (colorByPid) {
+            const auto color = pidToColor(row[MMUColumns::columns.pid]);
+            renderer_text->property_cell_background_rgba() = color;
+            renderer_text->property_cell_background_set() = true;
+            renderer_text->property_foreground() = "#000000";
+            renderer_text->property_foreground_set() = true;
+        } else {
+            renderer_text->property_cell_background_set() = false;
+            renderer_text->property_foreground_set() = false;
         }
     });
 }
