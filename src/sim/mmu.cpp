@@ -50,6 +50,8 @@ void MemoryManagementUnit::initAlgorithm(AlgType type, const std::vector<unsigne
     else if (type == AlgType::RND) mAlgorithm = std::make_unique<Random>(mRam, seed);
     // Fallback OPT
     else mAlgorithm = std::make_unique<Optimal>(mRam, accessSequence);
+
+    mAlgorithm->type = type;
 }
 
 void MemoryManagementUnit::setProcCount(unsigned int n) {
@@ -209,11 +211,9 @@ bool MemoryManagementUnit::insertPageOnDisk(std::unique_ptr<Page> &page, unsigne
 }
 
 bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned int index) {
-    bool fault = false;
     if (page->isInRealMem()) {
         if (mAlgorithm->type == AlgTypeE::SC) page->setSecondChance(true);
         if (mAlgorithm) mAlgorithm->onAccess(page->id);
-        addTime(false);
         return false;
     }
 
@@ -222,7 +222,6 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
     if (it != mDisk.end()) {
         mDiskAddresses.insert((*it->second)->getPhysicalDir());
         mDisk.erase(it);
-        fault = true;
     }
 
     auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](std::unique_ptr<Page>* &p){
@@ -231,7 +230,6 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
 
     unsigned int idx = ramAddress();
 
-    addTime(fault);
     mLoadedPages++;
     page->setInRealMem(true);
     page->setAccess(algTime);
@@ -284,8 +282,9 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     std::vector<std::unique_ptr<Page>> &pages = ptr->second.getPages();
     std::vector<unsigned int> evictIndex = mAlgorithm->execute(pages.size());
     auto it = evictIndex.begin();
-
+    
     for (auto &p : pages) {
+        bool fault = false;
         unsigned int index = mRam.size();
 
         if (index >= 100 && !p->isInRealMem()) {
@@ -294,8 +293,10 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
             std::unique_ptr<Page> &ev = *mRam[*it];
             insertPageOnDisk(ev, *it);
             index = *it;
+            fault = true;
         }
 
+        addTime(fault);
         insertPageOnRam(p, index);
     }
 
@@ -322,6 +323,8 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
         } else {
             diskIdxs.insert(pg->getPhysicalDir());
         }
+        
+        addTime(false);
     }
 
     // Usar conjuntos de ids a borrar para filtrar
