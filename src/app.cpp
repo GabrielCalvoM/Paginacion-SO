@@ -75,7 +75,6 @@ void Application::runSimulation() {
 
     while (!mResetRequest.load() && mIsRunning.load() && mFinishedCount.load() < 2) {
         std::unique_lock<std::mutex> lock(mmtx);
-        std::cout << "Simulación: " << ++i << std::endl;
         mcv.wait(lock, [&]{ return mWaitCount.load() >= 2 || mFinishedCount.load() >= 2 || mResetRequest.load(); });
         if (mResetRequest.load()) break;
         mWaitCount.store(0);
@@ -113,8 +112,6 @@ void Application::runSimulation() {
     mAlgThread.join();
 
     mIsRunning.store(false);
-    
-    std::cout << "Fin de Simulación" << std::endl;
 }
 
 void Application::runComputer(Computer &sim) {
@@ -122,7 +119,6 @@ void Application::runComputer(Computer &sim) {
     while (!mResetRequest.load()
         && sim.executeNext()) {
         mWaitCount.fetch_add(1);
-        std::cout << "  Computador: " << ++i << std::endl;
         mcv.notify_all();
         sim.setWaitThread(true);
         std::unique_lock<std::mutex> lock(mmtx);
@@ -131,8 +127,6 @@ void Application::runComputer(Computer &sim) {
     
     mFinishedCount.fetch_add(1);
     mcv.notify_all();
-
-    std::cout << "Fin de Computador" << std::endl;
 }
 
 void Application::resetSimulation() {
@@ -166,7 +160,7 @@ std::vector<MMUModel> getMMU(Computer &sim) {
             (*p.second)->id,
             (*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
             !(*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
-            0,
+            sim.mmu.getAlgTime() - (*p.second)->getAccess(),
             (*p.second)->hasSecondChance()
         });
     }
@@ -180,7 +174,7 @@ std::vector<MMUModel> getMMU(Computer &sim) {
             (*p.second)->id,
             (*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
             !(*p.second)->isInRealMem() ? (*p.second)->getPhysicalDir()+1 : 0,
-            0,
+            sim.mmu.getAlgTime() - (*p.second)->getAccess(),
             (*p.second)->hasSecondChance()
         });
     }
