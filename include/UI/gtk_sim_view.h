@@ -12,6 +12,12 @@
 #include <glibmm/ustring.h>
 #include <vector>
 
+typedef enum class PageAction {
+    createPage,
+    modifyPage,
+    deletePage
+} PageActionE;
+
 typedef struct MMUModel {
     guint id;
     guint pid;

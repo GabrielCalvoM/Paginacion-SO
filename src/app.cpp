@@ -151,8 +151,27 @@ std::vector<MMUModel> getMMU(Computer &sim) {
     const auto disk = sim.mmu.disk();
     std::vector<MMUModel> vec;
 
+    //for (const auto &p : sim.mmu.pagesCreated()) {
+    //    if (p == nullptr) continue;
+    //    vec.push_back({
+    //        (*p)->id,
+    //        sim.mmu.getPageId((*p)->id),
+    //        (*p)->isInRealMem(),
+    //        (*p)->id,
+    //        (*p)->isInRealMem() ? (*p)->getPhysicalDir()+1 : 0,
+    //        !(*p)->isInRealMem() ? (*p)->getPhysicalDir()+1 : 0,
+    //        sim.mmu.getAlgTime() - (*p)->getAccess(),
+    //        (*p)->hasSecondChance()
+    //    });
+    //}
+
     for (const auto &p : ram) {
         if (p.second == nullptr) continue;
+
+        //auto it = std::find_if(vec.begin(), vec.end(), [&](const MMUModel &page){
+        //    return p.second != nullptr && (*p.second)->id == page.id; });
+        //if (it != vec.end()) continue;
+
         vec.push_back({
             (*p.second)->id,
             sim.mmu.getPageId((*p.second)->id),
@@ -164,6 +183,26 @@ std::vector<MMUModel> getMMU(Computer &sim) {
             (*p.second)->hasSecondChance()
         });
     }
+
+    //for (const auto &p : sim.mmu.pagesModified()) {
+    //    if (p == nullptr) continue;
+    //    vec.push_back({
+    //        (*p)->id,
+    //        sim.mmu.getPageId((*p)->id),
+    //        (*p)->isInRealMem(),
+    //        (*p)->id,
+    //        (*p)->isInRealMem() ? (*p)->getPhysicalDir()+1 : 0,
+    //        !(*p)->isInRealMem() ? (*p)->getPhysicalDir()+1 : 0,
+    //        sim.mmu.getAlgTime() - (*p)->getAccess(),
+    //        (*p)->hasSecondChance()
+    //    });
+    //}
+
+    //for (const auto id : sim.mmu.pagesDeleted()) {
+    //    vec.push_back({
+    //        id
+    //    });
+    //}
 
     for (const auto &p : disk) {
         if (p.second == nullptr) continue;

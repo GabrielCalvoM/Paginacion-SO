@@ -188,12 +188,16 @@ unsigned int MemoryManagementUnit::diskAddress() {
 bool MemoryManagementUnit::insertPageOnDisk(std::unique_ptr<Page> &page, unsigned int index) {
     if (!page->isInRealMem()) return false;
 
-    auto it = std::find_if(mRam.begin(), mRam.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){
+    auto it1 = std::find_if(mRam.begin(), mRam.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){
         return p.second != nullptr && (*p.second)->id == page->id; });
-    if (it != mRam.end()) {
-        mRamAddresses.insert((*it->second)->getPhysicalDir());
-        mRam.erase(it);
+    if (it1 != mRam.end()) {
+        mRamAddresses.insert((*it1->second)->getPhysicalDir());
+        mRam.erase(it1);
     }
+
+    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](const std::unique_ptr<Page>* &p){
+        return p != nullptr && (*p)->id == page->id; });
+    if (it2 == mPagesCreated.end()) mPagesModified.push_back(&page);
 
     unsigned int idx = diskAddress();
 
@@ -220,6 +224,10 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
         mDisk.erase(it);
         fault = true;
     }
+
+    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](const std::unique_ptr<Page>* &p){
+        return p != nullptr && (*p)->id == page->id; });
+    if (it2 == mPagesCreated.end()) mPagesModified.push_back(&page);
 
     unsigned int idx = ramAddress();
 
@@ -328,6 +336,7 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
         }
 
         mRamAddresses.insert(idx);
+        mPagesDeleted.push_back(pid);
         mRam.erase(idx);
     }
 
