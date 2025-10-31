@@ -13,10 +13,10 @@ std::vector<std::unique_ptr<Page>>& Pointer::getPages() const {
 
 // --- Setters ---
 void Pointer::assignPages(int size, unsigned int &idCount) { 
-    while (size >= 4096) {
+    while (size > 4096) {
         mPages.push_back(std::make_unique<Page>(4096, idCount));
         size -= 4096;
     }
     
-    mPages.push_back(std::make_unique<Page>(4096, idCount));
+    mPages.push_back(std::make_unique<Page>(size, idCount));
 }

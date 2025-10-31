@@ -32,10 +32,8 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
     for (const auto &instr : mVec) { switch (instr.type) {
         case newI: {
             // define pages
-            unsigned int pid = instr.param1;    
-            size_t bytes = instr.param2;        
-            unsigned int pages = static_cast<unsigned int>(bytes / Page::pageSize);
-            if (bytes % Page::pageSize) ++pages;
+            size_t bytes = instr.param2;
+            unsigned int pages = static_cast<unsigned int>(std::ceil(bytes / (double)Page::pageSize));
             unsigned int ptrId = nextPtrId++;
             
             // assign sequential ids
@@ -45,6 +43,15 @@ const std::vector<unsigned int> IntSet::getAccessSequence() const {
             
             // store mapping
             ptrToPages[ptrId] = pagesVec;
+
+            auto it = ptrToPages.find(ptrId);
+
+            // add to sequence
+            if (it != ptrToPages.end()) {
+                sequence.insert(sequence.end(), it->second.begin(), it->second.end());
+            } 
+
+            break;
         }
 
         case useI: {

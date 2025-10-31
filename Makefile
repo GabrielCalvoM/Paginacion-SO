@@ -6,6 +6,7 @@ CC = g++
 SRC_DIR = src
 OBJ_DIR = bin/obj
 PROG = PaginacionSim
+DEBUG = debug
 MAIN = ${SRC_DIR}/main.cpp
 
 GTK_CFLAGS := $(shell pkg-config --cflags gtkmm-3.0 2>/dev/null)
@@ -25,6 +26,12 @@ OBJ_DIRS = $(sort $(dir ${OBJ}))
 
 # Default target: build executable
 all: ${PROG}
+
+debug: CFLAGS += -g -O0
+debug: ${DEBUG}
+
+${DEBUG}: ${OBJ} ${MAIN}
+	${CC} ${CFLAGS} ${MAIN} ${OBJ} -o $@ ${LIBS} -Wl,-export-dynamic
 
 ${PROG}: ${OBJ} ${MAIN}
 	${CC} ${CFLAGS} ${MAIN} ${OBJ} -o $@ ${LIBS} -Wl,-export-dynamic

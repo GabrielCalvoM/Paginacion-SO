@@ -28,8 +28,8 @@ private:
     std::unordered_map<unsigned int, std::unique_ptr<Page>*> mDisk;
     std::unique_ptr<IAlgorithm> mAlgorithm;
     
-    std::set<unsigned int> mPagesCreated;
-    std::set<unsigned int> mPagesModified;
+    std::vector<std::unique_ptr<Page>*> mPagesCreated;
+    std::vector<std::unique_ptr<Page>*> mPagesModified;
     std::vector<unsigned int> mPagesDeleted;
     unsigned int mLoadedPages = 0;
     unsigned int mUnloadedPages = 0;
@@ -57,27 +57,19 @@ public:
     // --- Getters ---
     const std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram() const { return mRam; }
     const std::unordered_map<unsigned int, std::unique_ptr<Page>*> &disk() const { return mDisk; }
-    const std::vector<std::unique_ptr<Page>*> pagesCreated() const {
-        std::vector<std::unique_ptr<Page>*> vec;
-        for (auto p : mRam) if (mPagesCreated.find((*p.second)->id) == mPagesCreated.end()) vec.push_back(p.second);
-        for (auto p : mDisk) if (mPagesCreated.find((*p.second)->id) == mPagesCreated.end()) vec.push_back(p.second);
-        return vec;
-    }
-    const std::vector<std::unique_ptr<Page>*> pagesModified() const {
-        std::vector <std::unique_ptr<Page>*> vec;
-        for (auto p : mRam) vec.push_back(p.second);
-        for (auto p : mDisk) if (mPagesModified.find((*p.second)->id) == mPagesModified.end()) vec.push_back(p.second);
-        return vec;
-    }
+    const std::vector<std::unique_ptr<Page>*> pagesCreated() const { return mPagesCreated; }
+    const std::vector<std::unique_ptr<Page>*> pagesModified() const { return mPagesModified; }
     const std::vector<unsigned int> &pagesDeleted() const { return mPagesDeleted; }
     const unsigned int getPageId(unsigned int id) const { return mPtrMap.at(mPageMap.at(id)); }
     const unsigned int getProcesses() const { return mProcessList.size(); }
     const unsigned int getRamSize() const {
-        int size = 0; for (const auto &p : mRam) size += (*p.second)->getSpace();
+        int size = 0;
+        for (const auto &p : mRam) size += (*p.second)->getSpace();
         return size;
     }
     const unsigned int getDiskSize() const {
-        int size = 0; for (const auto &p : mDisk) size += (*p.second)->getSpace();
+        int size = 0;
+        for (const auto &p : mDisk) size += (*p.second)->getSpace();
         return size;
     }
     const unsigned int getLoadedPages() const { return mRam.size(); }
@@ -94,8 +86,7 @@ public:
         size_t usedBytes = getRamSize() + getDiskSize();
         size_t freeBytes = totalBytes - usedBytes;
 
-        // percentage
-        return static_cast<unsigned int>((freeBytes * 100) / totalBytes);
+        return freeBytes;
     }
 
 

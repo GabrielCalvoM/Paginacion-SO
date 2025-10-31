@@ -5,6 +5,7 @@
 #include <new>
 #include <set>
 #include <mutex>
+#include <iostream>
 
 #include "alg/optimal.h"
 #include "alg/fifo.h"
@@ -188,16 +189,22 @@ bool MemoryManagementUnit::insertPageOnDisk(std::unique_ptr<Page> &page, unsigne
     if (!page->isInRealMem()) return false;
 
     auto it = std::find_if(mRam.begin(), mRam.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){ return (*p.second)->id == page->id; });
-    if (it != mRam.end()) { mRamAddresses.insert((*it->second)->getPhysicalDir()); mRam.erase(it); }
+    if (it != mRam.end()) {
+        mRamAddresses.insert((*it->second)->getPhysicalDir());
+        mRam.erase(it);
+    }
+
+    unsigned int idx = diskAddress();
 
     page->setInRealMem(false);
-    page->setPhysicalDir(static_cast<unsigned int>(mDisk.size()));
-    mDisk[index] = &page;
-    if (mAlgorithm) mAlgorithm->onEvict(page->id, index);
+    page->setPhysicalDir(static_cast<unsigned int>(idx));
+    mDisk[idx] = &page;
+    if (mAlgorithm) mAlgorithm->onEvict(page->id, idx);
     return true;
 }
 
 bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned int index) {
+    bool fault = false;
     if (page->isInRealMem()) {
         if (mAlgorithm->type == AlgTypeE::SC) page->setSecondChance(true);
         if (mAlgorithm) mAlgorithm->onAccess(page->id);
@@ -206,14 +213,21 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
     }
 
     auto it = std::find_if(mDisk.begin(), mDisk.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){ return (*p.second)->id == page->id; });
-    if (it != mDisk.end()) { mDiskAddresses.insert((*it->second)->getPhysicalDir()); mDisk.erase(it); }
+    if (it != mDisk.end()) {
+        mDiskAddresses.insert((*it->second)->getPhysicalDir());
+        mDisk.erase(it);
+        fault = true;
+    }
 
-    page->setInRealMem(true);
-    page->setPhysicalDir(static_cast<unsigned int>(mRam.size()));
-    mRam[index] = &page;
-    if (mAlgorithm) mAlgorithm->onInsert(page->id, index);
-    addTime(true);
+    unsigned int idx = ramAddress();
+
+    addTime(fault);
     mLoadedPages++;
+    page->setInRealMem(true);
+    page->setAccess(algTime);
+    page->setPhysicalDir(static_cast<unsigned int>((idx)));
+    mRam[idx] = &page;
+    if (mAlgorithm) mAlgorithm->onInsert(page->id, idx);
     return true;
 }
 
@@ -243,7 +257,7 @@ unsigned int MemoryManagementUnit::newPtr(unsigned int pid, size_t size)
     ptr.assignPages(size, pageIdCount);
     std::vector<std::unique_ptr<Page>> &newPages = ptr.getPages();
 
-    for (auto &p : newPages) { mPageMap.emplace(p->id, ptr.id); mPagesCreated.insert(p->id); }    
+    for (auto &p : newPages) { mPageMap.emplace(p->id, ptr.id); mPagesCreated.push_back(&p); }    
 
     usePtr(ptr.id);
 
@@ -264,7 +278,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     for (auto &p : pages) {
         unsigned int index = mRam.size();
 
-        if (mRam.size() >= 100) {
+        if (index >= 100) {
             while (std::find_if(pages.begin(), pages.end(), [&](const std::unique_ptr<Page> &page){ return (*mRam[*it])->id == page->id; }) != pages.end()) ++it;
             std::unique_ptr<Page> &ev = *mRam[*it];
             insertPageOnDisk(ev, *it);
@@ -295,24 +309,30 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
         if (pg->isInRealMem()) {
             ramIdxs.insert(pg->getPhysicalDir());
         } else {
-            ramIdxs.insert(pg->getPhysicalDir());
+            diskIdxs.insert(pg->getPhysicalDir());
         }
     }
 
     // Usar conjuntos de ids a borrar para filtrar
     for (unsigned int idx : ramIdxs) {
-        mRam.erase(mRam.find(idx));
-    }
-    for (unsigned int idx : diskIdxs) {
-        mDisk.erase(mDisk.find(idx));
-    }
-
-    // Notify algorithm of evictions for RAM indices to be removed
-    for (unsigned int idx : ramIdxs) {
+        auto it = mRam.find(idx);
+        if (it == mRam.end()) continue;
+        unsigned int pid = (*mRam[idx])->id;
+        
+        // Notify algorithm of evictions for RAM indices to be removed
         if (idx < mRam.size()) {
-            unsigned int pid = (*mRam[idx])->id;
             if (mAlgorithm) mAlgorithm->onEvict(pid, idx);
         }
+
+        mRamAddresses.insert((*it->second)->getPhysicalDir());
+        mRam.erase(idx);
+    }
+
+    for (unsigned int idx : diskIdxs) {
+        auto it = mDisk.find(idx);
+        if (it == mDisk.end()) continue;
+        mDiskAddresses.insert((*it->second)->getPhysicalDir());
+        mDisk.erase(idx);
     }
 
     //remueve pointer from simbol table

@@ -37,6 +37,7 @@
 *.out
 *.app
 PaginacionSim
+debug
 
 # debug information files
 *.dwo
