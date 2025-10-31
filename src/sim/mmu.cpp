@@ -195,7 +195,7 @@ bool MemoryManagementUnit::insertPageOnDisk(std::unique_ptr<Page> &page, unsigne
         mRam.erase(it1);
     }
 
-    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](const std::unique_ptr<Page>* &p){
+    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](std::unique_ptr<Page>* &p){
         return p != nullptr && (*p)->id == page->id; });
     if (it2 == mPagesCreated.end()) mPagesModified.push_back(&page);
 
@@ -225,7 +225,7 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
         fault = true;
     }
 
-    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](const std::unique_ptr<Page>* &p){
+    auto it2 = std::find_if(mPagesCreated.begin(), mPagesCreated.end(), [&](std::unique_ptr<Page>* &p){
         return p != nullptr && (*p)->id == page->id; });
     if (it2 == mPagesCreated.end()) mPagesModified.push_back(&page);
 
