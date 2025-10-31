@@ -158,6 +158,7 @@ std::vector<MMUModel> getMMU(Computer &sim) {
     std::vector<MMUModel> vec;
 
     for (const auto &p : ram) {
+        if (p.second == nullptr) continue;
         vec.push_back({
             (*p.second)->id,
             sim.mmu.getPageId((*p.second)->id),
@@ -171,6 +172,7 @@ std::vector<MMUModel> getMMU(Computer &sim) {
     }
 
     for (const auto &p : disk) {
+        if (p.second == nullptr) continue;
         vec.push_back({
             (*p.second)->id,
             sim.mmu.getPageId((*p.second)->id),

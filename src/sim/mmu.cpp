@@ -188,7 +188,8 @@ unsigned int MemoryManagementUnit::diskAddress() {
 bool MemoryManagementUnit::insertPageOnDisk(std::unique_ptr<Page> &page, unsigned int index) {
     if (!page->isInRealMem()) return false;
 
-    auto it = std::find_if(mRam.begin(), mRam.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){ return (*p.second)->id == page->id; });
+    auto it = std::find_if(mRam.begin(), mRam.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){
+        return p.second != nullptr && (*p.second)->id == page->id; });
     if (it != mRam.end()) {
         mRamAddresses.insert((*it->second)->getPhysicalDir());
         mRam.erase(it);
@@ -212,7 +213,8 @@ bool MemoryManagementUnit::insertPageOnRam(std::unique_ptr<Page> &page, unsigned
         return false;
     }
 
-    auto it = std::find_if(mDisk.begin(), mDisk.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){ return (*p.second)->id == page->id; });
+    auto it = std::find_if(mDisk.begin(), mDisk.end(), [&](const std::pair<const unsigned int, std::unique_ptr<Page>*> &p){
+        return p.second != nullptr && (*p.second)->id == page->id; });
     if (it != mDisk.end()) {
         mDiskAddresses.insert((*it->second)->getPhysicalDir());
         mDisk.erase(it);
@@ -278,8 +280,9 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
     for (auto &p : pages) {
         unsigned int index = mRam.size();
 
-        if (index >= 100) {
-            while (std::find_if(pages.begin(), pages.end(), [&](const std::unique_ptr<Page> &page){ return (*mRam[*it])->id == page->id; }) != pages.end()) ++it;
+        if (index >= 100 && !p->isInRealMem()) {
+            while (std::find_if(pages.begin(), pages.end(), [&](const std::unique_ptr<Page> &page){ 
+                return mRam[*it] != nullptr && (*mRam[*it])->id == page->id; }) != pages.end()) ++it;
             std::unique_ptr<Page> &ev = *mRam[*it];
             insertPageOnDisk(ev, *it);
             index = *it;
@@ -295,11 +298,11 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 // --- PROC METHOD: DEL PTR ---
 void MemoryManagementUnit::delPtr(unsigned int ptrId)
 {
-    auto it = mSimbolTable.find(ptrId);
-    if (it == mSimbolTable.end()) return;
+    auto ptr = mSimbolTable.find(ptrId);
+    if (ptr == mSimbolTable.end()) return;
 
-    Pointer &ptr = it->second;
-    std::vector<std::unique_ptr<Page>> &pages = ptr.getPages(); //copia de las paginas
+    Pointer &pointer = ptr->second;
+    std::vector<std::unique_ptr<Page>> &pages = pointer.getPages(); //copia de las paginas
 
     //recolectar indices en RAM y DISK
     std::set<unsigned int> ramIdxs;
@@ -324,19 +327,19 @@ void MemoryManagementUnit::delPtr(unsigned int ptrId)
             if (mAlgorithm) mAlgorithm->onEvict(pid, idx);
         }
 
-        mRamAddresses.insert((*it->second)->getPhysicalDir());
+        mRamAddresses.insert(idx);
         mRam.erase(idx);
     }
 
     for (unsigned int idx : diskIdxs) {
         auto it = mDisk.find(idx);
         if (it == mDisk.end()) continue;
-        mDiskAddresses.insert((*it->second)->getPhysicalDir());
+        mDiskAddresses.insert(idx);
         mDisk.erase(idx);
     }
 
     //remueve pointer from simbol table
-    mSimbolTable.erase(it);
+    mSimbolTable.erase(ptr);
 
     //NOTA: No se elimina el puntero de la lista de punteros del proceso propietario!!!!
     // OJOOOO
