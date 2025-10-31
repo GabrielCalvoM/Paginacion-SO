@@ -93,7 +93,7 @@ public:
         size_t freeBytes = totalBytes - usedBytes;
 
         // percentage
-        return static_cast<unsigned int>((freeBytes * 100) / totalBytes);
+        return static_cast<unsigned int> freeBytes;
     }
 
 

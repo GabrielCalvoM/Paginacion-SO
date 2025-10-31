@@ -352,6 +352,7 @@ void MemoryManagementUnit::usePtr(unsigned int ptrId)
 // --- PROC METHOD: DEL PTR ---
 void MemoryManagementUnit::delPtr(unsigned int ptrId)
 {
+    addTime(true);
     auto it = mSimbolTable.find(ptrId);
     if (it == mSimbolTable.end()) return;
 
