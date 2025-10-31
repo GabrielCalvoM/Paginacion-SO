@@ -39,7 +39,7 @@ void Optimal::onInsert(unsigned int pageId, unsigned int idx) {
 // Execution: evict using Belady (farthest next use or never)
 std::vector<unsigned int> Optimal::execute(unsigned int pages) 
 {
-    printf("\n [OPT]-Start \n");
+   
 
     std::vector<unsigned int> evicted;
     if (pages == 0 || mRam.empty()) return evicted;
@@ -83,10 +83,6 @@ std::vector<unsigned int> Optimal::execute(unsigned int pages)
         }
     }
 
-    std::cout << "\n [OPT]-Evicting: ";
-    for (unsigned int idx : evicted) std::cout << idx << " ";
-    std::cout << "\n";
-
-    printf("\n [OPT]-Finish \n");
+    
     return evicted;
 }

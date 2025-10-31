@@ -86,9 +86,7 @@ std::vector<unsigned int> Fifo::execute(unsigned int pages)
         // if not found, skip
     }
 
-    std::cout << "\n [FIFO]-Evicting: ";
-    for (unsigned int idx : evicted) std::cout << idx << " ";
-    std::cout << "\n";
+    
 
     return evicted;
 }

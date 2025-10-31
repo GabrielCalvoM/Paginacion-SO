@@ -13,37 +13,53 @@ std::vector<unsigned int> SecondChance::execute(unsigned int pages)
 {
     std::vector<unsigned int> evicted;
     if (mRam.empty() || pages == 0) return evicted;
-    unsigned int frameCount = static_cast<unsigned int>(mRam.size());
-    unsigned int need = std::min<unsigned int>(pages, frameCount);
 
-    // Ensure hand is in range
-    if (mHand >= frameCount) mHand = 0;
-    std::set<unsigned int> pgIdxs;
-    for (auto it : mRam) pgIdxs.insert(it.first);
-    auto it = pgIdxs.begin();
+    // Build a stable vector of frame indices (keys)
+    std::vector<unsigned int> frames;
+    frames.reserve(mRam.size());
+    for (const auto &entry : mRam) frames.push_back(entry.first);
 
-    // Loop until we collected required number of frames to evict
-    while (evicted.size() < need && frameCount > 0) {
-        if (mHand >= mRam.size()) { mHand = 0; it = pgIdxs.begin(); }
-        auto &pg = mRam[*(it++)];
+    if (frames.empty()) return evicted;
 
-        if ((*pg)->hasSecondChance()) {
-            // second chance clear the bit and advance
-            (*pg)->setSecondChance(false);
-            mHand = (mHand + 1) % frameCount;
+    // Normalize hand to range
+    if (mHand >= frames.size()) mHand = 0;
+
+    unsigned int need = std::min<unsigned int>(pages, static_cast<unsigned int>(frames.size()));
+
+    // Walk the circular list until we collect 'need' frames to evict
+    while (evicted.size() < need && !frames.empty()) {
+        // ensure hand in range after removals
+        if (mHand >= frames.size()) mHand = 0;
+
+        unsigned int frameIdx = frames[mHand];
+        auto itMap = mRam.find(frameIdx);
+        if (itMap == mRam.end() || itMap->second == nullptr) {
+            // If map entry vanished or pointer null, remove this frame from list
+            frames.erase(frames.begin() + mHand);
             continue;
         }
 
-        // No second chance
-        evicted.push_back(mHand);
+        std::unique_ptr<Page>* uptr = itMap->second;
+        if (!uptr || !(*uptr)) {
+            // defensive: remove invalid entries
+            frames.erase(frames.begin() + mHand);
+            continue;
+        }
 
-        // Advance hand to next frame
-        mHand = (mHand + 1) % frameCount;
+        Page *page = uptr->get();
+        if (page->hasSecondChance()) {
+            // give second chance: clear bit and advance hand
+            page->setSecondChance(false);
+            mHand = (mHand + 1) % frames.size();
+        } else {
+            // select this frame for eviction; remove from frames so we don't revisit
+            evicted.push_back(frameIdx);
+            frames.erase(frames.begin() + mHand);
+            // mHand stays at same index which now points to the next element;
+            if (!frames.empty()) mHand %= frames.size();
+        }
     }
 
-    std::cout << "\n [SC]-Evicting: ";
-    for (unsigned int idx : evicted) std::cout << idx << " ";
-    std::cout << "\n";
 
     return evicted;
 }

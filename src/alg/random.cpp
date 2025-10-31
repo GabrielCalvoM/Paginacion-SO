@@ -20,7 +20,7 @@ Random::Random(std::unordered_map<unsigned int, std::unique_ptr<Page>*> &ram, un
 // EXECUTION
 std::vector<unsigned int> Random::execute(unsigned int pages) 
 {
-    printf("\n [RND]-Start \n");
+    
     std::vector<unsigned int> evicted;
     if (pages == 0 || mRam.empty()) return evicted;
 
@@ -36,10 +36,6 @@ std::vector<unsigned int> Random::execute(unsigned int pages)
     // correct range: begin -> begin + pages
     evicted.insert(evicted.end(), roulette.begin(), roulette.begin() + pages);
 
-    std::cout << "\n [RND]-Evicting: ";
-    for (unsigned int idx : evicted) std::cout << idx << " ";
-    std::cout << "\n";
-
-    printf("\n [RND]-Finish \n");
+    
     return evicted;
 }

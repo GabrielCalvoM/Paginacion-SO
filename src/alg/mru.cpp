@@ -51,7 +51,7 @@ void Mru::onEvict(unsigned int pageId, unsigned int frameIdx) {
 ////////////////////////////////////////////////////////////////////////
 // EXECUTION
 std::vector<unsigned int> Mru::execute(unsigned int pages) {
-    printf("\n [MRU]-Start \n");
+    
     std::vector<unsigned int> evicted;
     if (mRam.empty() || pages == 0) return evicted;
 
@@ -103,10 +103,6 @@ std::vector<unsigned int> Mru::execute(unsigned int pages) {
         }
     }
 
-    std::cout << "\n [MRU]-Evicting: ";
-    for (unsigned int idx : evicted) std::cout << idx << " ";
-    std::cout << "\n";
-
-    printf("\n [MRU]-Finish \n");
+    
     return evicted;
 }
