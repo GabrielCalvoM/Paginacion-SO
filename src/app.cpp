@@ -14,12 +14,12 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
 
         // Debug: verify instructions were copied and access-sequence built
         auto seq = mInstructions.getAccessSequence();
-        std::cout << "[DBG] App: IntSet access sequence size = " << seq.size() << std::endl;
-        if (!seq.empty()) {
-            std::cout << "[DBG] App: first entries:";
-            for (size_t i = 0; i < seq.size() && i < 10; ++i) std::cout << " " << seq[i];
-            std::cout << std::endl;
-        }
+        //std::cout << "[DBG] App: IntSet access sequence size = " << seq.size() << std::endl;
+        //if (!seq.empty()) {
+        //    std::cout << "[DBG] App: first entries:";
+        //    for (size_t i = 0; i < seq.size() && i < 10; ++i) std::cout << " " << seq[i];
+        //    std::cout << std::endl;
+        //}
 
         this->mOptSimulation.mmu.initAlgorithm(AlgTypeE::OPT, mInstructions.getAccessSequence());
     });
@@ -32,10 +32,10 @@ Application::Application(int argc, char *argv[]) : mWindow(argc, argv, mInstruct
         mcv.wait(lock, [this]{ return mIsRunning.load(); });
         lock.unlock();
 
-        printf("\t[OPT SIM]\n");
-        mOptSimulation.mmu.printState();
-        printf("\t[ALG SIM]\n");
-        mAlgSimulation.mmu.printState();
+        //printf("\t[OPT SIM]\n");
+        //mOptSimulation.mmu.printState();
+        //printf("\t[ALG SIM]\n");
+        //mAlgSimulation.mmu.printState();
 
         Computer::setPaused(false);
         mcv.notify_all();
