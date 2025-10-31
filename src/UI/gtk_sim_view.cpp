@@ -326,10 +326,70 @@ void GtkSimView::initialize() {
     pagesCellRender(mOptPages);
 
     auto thrashingCellRender = [=](Gtk::TreeView *tree) {
-        setRendererText(tree->get_column(0), [=](Gtk::TreeRow &row) { return std::to_string(row[InfoColumns::columns.thrashing]) + "s"; });
-        setRendererText(tree->get_column(1), [=](Gtk::TreeRow &row) 
-            { return floatToString(row[InfoColumns::columns.thrashing] == 0 || row[InfoColumns::columns.time] == 0
-                ? 0.0 : row[InfoColumns::columns.thrashing] * 100.0 / row[InfoColumns::columns.time], 2) + "%"; });
+        // column 0 -> total thrashing time in seconds
+        if (auto col0 = tree->get_column(0)) {
+            col0->set_alignment(0.5);
+            auto first = col0->get_first_cell();
+            if (first) {
+                col0->set_cell_data_func(*first, [=](Gtk::CellRenderer *cell, const Gtk::TreeModel::iterator &iter) {
+                    auto row = *iter;
+                    auto renderer_text = dynamic_cast<Gtk::CellRendererText *>(cell);
+                    if (!renderer_text) return;
+
+                    const guint thrash = row[InfoColumns::columns.thrashing];
+                    const guint time = row[InfoColumns::columns.time];
+                    const double percent = (thrash == 0 || time == 0) ? 0.0 : thrash * 100.0 / time;
+
+                    renderer_text->property_text() = std::to_string(thrash) + "s";
+                    renderer_text->property_xalign() = 0.5;
+                   
+                    renderer_text->property_foreground() = "#000000";
+                    renderer_text->property_foreground_set() = true;
+
+                    // background red if percent >= 50
+                    if (percent >= 50.0) {
+                        renderer_text->property_cell_background() = "#FF4D4D"; // soft red background
+                        renderer_text->property_cell_background_set() = true;
+                    } else {
+                        renderer_text->property_cell_background_set() = false;
+                    }
+                });
+            }
+        }
+
+        // Column 1 -> percentage
+        if (auto col1 = tree->get_column(1)) {
+            col1->set_alignment(0.5);
+            auto first = col1->get_first_cell();
+            if (first) {
+                col1->set_cell_data_func(*first, [=](Gtk::CellRenderer *cell, const Gtk::TreeModel::iterator &iter) {
+                    auto row = *iter;
+                    auto renderer_text = dynamic_cast<Gtk::CellRendererText *>(cell);
+                    if (!renderer_text) return;
+
+                    const guint thrash = row[InfoColumns::columns.thrashing];
+                    const guint time = row[InfoColumns::columns.time];
+                    const double percent = (thrash == 0 || time == 0) ? 0.0 : thrash * 100.0 / time;
+
+                    // 2 decimales
+                    std::ostringstream out;
+                    out << std::fixed << std::setprecision(2) << percent;
+                    renderer_text->property_text() = out.str() + "%";
+                    renderer_text->property_xalign() = 0.5;
+                    
+                    renderer_text->property_foreground() = "#000000";
+                    renderer_text->property_foreground_set() = true;
+
+                    // background red if percent >= 50
+                    if (percent >= 50.0) {
+                        renderer_text->property_cell_background() = "#FF4D4D"; 
+                        renderer_text->property_cell_background_set() = true;
+                    } else {
+                        renderer_text->property_cell_background_set() = false;
+                    }
+                });
+            }
+        }
     };
     
     thrashingCellRender(mAlgThrashing);
